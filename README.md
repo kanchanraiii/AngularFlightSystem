@@ -21,3 +21,11 @@ Frontend API calls traverse the gateway on port 9000 to the flight and booking s
 </p>
 
 In production  the login/register forms call the gateway, capture the JWT, and store it in localStorage plus an in-memory signal. An HTTP interceptor attaches `Authorization: Bearer <token>` to every request. A guard blocks the protected route when no token is present and redirects to login; the protected page reflects the live session and provides logout, which clears storage and state so subsequent navigation requires re-authentication.
+
+## User History Feature Showcase
+User history uses the stored JWT and email from session to call `/booking/api/booking/history/{email}`, then cross-references `/flight/api/flight/getAllFlights` to show route details. 
+<p align="center">
+  <img src="repository-media/user_history_demo.gif" alt="User history preview" />
+  <br />
+  <small>Figure 3. User history preview</small>
+</p>

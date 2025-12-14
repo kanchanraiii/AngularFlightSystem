@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from './auth/auth.service';
+import { BookingService } from './booking.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -33,12 +35,18 @@ import { AuthService } from './auth/auth.service';
         <div class="form-row">
           <div class="input-group">
             <label>From</label>
-            <input type="text" placeholder="Departure city" [(ngModel)]="from" />
+            <input type="text" placeholder="Departure city" [(ngModel)]="from" (input)="onSourceInput()" />
+            <ul class="suggestions" *ngIf="sourceSuggestions.length">
+              <li *ngFor="let s of sourceSuggestions" (click)="selectSource(s)">{{ s }}</li>
+            </ul>
           </div>
 
           <div class="input-group">
             <label>To</label>
-            <input type="text" placeholder="Destination city" [(ngModel)]="to" />
+            <input type="text" placeholder="Destination city" [(ngModel)]="to" (input)="onDestInput()" />
+            <ul class="suggestions" *ngIf="destSuggestions.length">
+              <li *ngFor="let s of destSuggestions" (click)="selectDest(s)">{{ s }}</li>
+            </ul>
           </div>
 
           <div class="input-group">
@@ -53,35 +61,127 @@ import { AuthService } from './auth/auth.service';
         </div>
 
         <button class="search-btn" (click)="search()">Search Flights</button>
+
+        <div class="results" *ngIf="searchAttempted && !loading">
+          <p *ngIf="!filteredFlights.length">No flights available.</p>
+          <div class="history-list" *ngIf="filteredFlights.length">
+            <div class="history-item" *ngFor="let f of filteredFlights">
+              <div class="history-row">
+                <span class="label">Flight</span>
+                <span class="value">{{ f.flightNumber || f.airlineCode || 'Flight' }}</span>
+              </div>
+              <div class="history-row">
+                <span class="label">Route</span>
+                <span class="value">{{ f.sourceCity }} → {{ f.destinationCity }}</span>
+              </div>
+              <div class="history-row">
+                <span class="label">Departure</span>
+                <span class="value">{{ f.departureDate }} {{ f.departureTime }}</span>
+              </div>
+              <div class="history-row">
+                <span class="label">Arrival</span>
+                <span class="value">{{ f.arrivalDate }} {{ f.arrivalTime }}</span>
+              </div>
+              <div class="history-row">
+                <span class="label">Price</span>
+                <span class="value">{{ f.price || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   `
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   tripType: 'one-way' | 'round-trip' = 'one-way';
   from = '';
   to = '';
   departureDate = '';
   returnDate = '';
+  flights: any[] = [];
+  filteredFlights: any[] = [];
+  sourceSuggestions: string[] = [];
+  destSuggestions: string[] = [];
+  loading = false;
+  searchAttempted = false;
+  error = '';
 
-  constructor(public auth: AuthService, private router: Router) {}
+  constructor(public auth: AuthService, private router: Router, private booking: BookingService) {}
+
+  ngOnInit() {
+    this.loadFlights();
+  }
+
+  async loadFlights() {
+    this.loading = true;
+    this.error = '';
+    try {
+      const flights = await firstValueFrom(this.booking.getAllFlights());
+      this.flights = Array.isArray(flights) ? flights : [];
+    } catch (err) {
+      this.error = 'Failed to load flights.';
+      this.flights = [];
+    } finally {
+      this.loading = false;
+    }
+  }
 
   setTripType(type: 'one-way' | 'round-trip') {
     this.tripType = type;
-  }
-
-  search() {
-    console.log('Search flights', {
-      tripType: this.tripType,
-      from: this.from,
-      to: this.to,
-      departureDate: this.departureDate,
-      returnDate: this.returnDate
-    });
+    this.filteredFlights = [];
+    this.searchAttempted = false;
   }
 
   logout() {
     this.auth.logout();
     this.router.navigate(['/login']);
+  }
+
+  onSourceInput() {
+    this.sourceSuggestions = this.buildSuggestions(this.from);
+  }
+
+  onDestInput() {
+    this.destSuggestions = this.buildSuggestions(this.to);
+  }
+
+  buildSuggestions(query: string) {
+    const q = (query || '').trim().toLowerCase();
+    if (!q) return [];
+    const cities = new Set<string>();
+    this.flights.forEach((f) => {
+      if (f.sourceCity && f.sourceCity.toLowerCase().includes(q)) cities.add(f.sourceCity);
+      if (f.destinationCity && f.destinationCity.toLowerCase().includes(q)) cities.add(f.destinationCity);
+    });
+    return Array.from(cities).slice(0, 5);
+  }
+
+  selectSource(city: string) {
+    this.from = city;
+    this.sourceSuggestions = [];
+  }
+
+  selectDest(city: string) {
+    this.to = city;
+    this.destSuggestions = [];
+  }
+
+  search() {
+    this.searchAttempted = true;
+    this.sourceSuggestions = [];
+    this.destSuggestions = [];
+    if (!this.from || !this.to || !this.departureDate) {
+      this.filteredFlights = [];
+      return;
+    }
+    const fromLower = this.from.toLowerCase();
+    const toLower = this.to.toLowerCase();
+    this.filteredFlights = this.flights.filter((f) => {
+      const src = (f.sourceCity || '').toLowerCase();
+      const dst = (f.destinationCity || '').toLowerCase();
+      const dateMatch = this.departureDate ? f.departureDate === this.departureDate : true;
+      return src.includes(fromLower) && dst.includes(toLower) && dateMatch;
+    });
   }
 }
