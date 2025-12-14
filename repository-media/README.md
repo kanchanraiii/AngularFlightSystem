@@ -1,0 +1,1 @@
+In this folder every media file which is to be displayed in the main repo README.MD resides.
