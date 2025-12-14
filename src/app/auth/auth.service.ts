@@ -29,8 +29,9 @@ export class AuthService {
   private readonly baseUrl = '/auth';
   private readonly tokenKey = 'auth_token';
   private readonly usernameKey = 'auth_username';
-  private readonly session = signal<UserSession | null>(this.hydrateSession());
-  readonly isAuthenticated = computed(() => !!this.session());
+  private readonly sessionState = signal<UserSession | null>(this.hydrateSession());
+  readonly session = this.sessionState.asReadonly();
+  readonly isAuthenticated = computed(() => !!this.sessionState());
 
   constructor(private http: HttpClient) {}
 
@@ -49,15 +50,15 @@ export class AuthService {
   logout() {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.usernameKey);
-    this.session.set(null);
+    this.sessionState.set(null);
   }
 
   getToken(): string | null {
-    return this.session()?.token ?? null;
+    return this.sessionState()?.token ?? null;
   }
 
   getUsername(): string | null {
-    return this.session()?.username ?? null;
+    return this.sessionState()?.username ?? null;
   }
 
   private persistSession(token: string, username: string | null) {
@@ -65,7 +66,7 @@ export class AuthService {
     if (username) {
       localStorage.setItem(this.usernameKey, username);
     }
-    this.session.set({ token, username });
+    this.sessionState.set({ token, username });
   }
 
   private hydrateSession(): UserSession | null {
