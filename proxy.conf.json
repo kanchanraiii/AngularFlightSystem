@@ -8,5 +8,15 @@
     "target": "http://localhost:9000",
     "secure": false,
     "changeOrigin": true
+  },
+  "/booking": {
+    "target": "http://localhost:9000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/flight": {
+    "target": "http://localhost:9000",
+    "secure": false,
+    "changeOrigin": true
   }
 }

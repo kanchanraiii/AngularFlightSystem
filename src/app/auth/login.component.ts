@@ -3,54 +3,98 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './auth.service';
 import { firstValueFrom } from 'rxjs';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <h2>Login</h2>
-    <form (ngSubmit)="submit()" #form="ngForm">
-      <label>
-        Username:
-        <input name="username" [(ngModel)]="username" required />
-      </label>
-      <br />
-      <label>
-        Password:
-        <input name="password" type="password" [(ngModel)]="password" required />
-      </label>
-      <br />
-      <button type="submit" [disabled]="form.invalid || pending">Login</button>
-    </form>
-    <div *ngIf="message">{{ message }}</div>
-    <div *ngIf="token">Token: {{ token }}</div>
+    <nav class="navbar">
+      <a routerLink="/" class="logo">Flight Booking Sys</a>
+      <div class="nav-actions">
+        <button class="signup" *ngIf="auth.isAuthenticated()" (click)="logout()">Logout</button>
+        <ng-container *ngIf="!auth.isAuthenticated()">
+          <button class="login" routerLink="/login">Login</button>
+          <button class="signup" routerLink="/register">Sign Up</button>
+        </ng-container>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="auth-card">
+        <h1 class="card-heading">Welcome Back</h1>
+        <p class="auth-subtitle">Login to your account</p>
+
+        <p *ngIf="auth.isAuthenticated()">You are already logged in. Go to <a routerLink="/protected">Protected</a>.</p>
+
+        <form *ngIf="!auth.isAuthenticated()" class="auth-form" (ngSubmit)="submit()" #form="ngForm">
+          <div class="input-group">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="Enter your username" [(ngModel)]="username" required />
+          </div>
+
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="Enter your email" [(ngModel)]="email" required />
+          </div>
+
+          <div class="input-group">
+            <label>Password</label>
+            <input name="password" type="password" placeholder="Enter your password" [(ngModel)]="password" required />
+          </div>
+
+          <div class="form-options"></div>
+
+          <button type="submit" class="auth-btn" [disabled]="form.invalid || pending">Login</button>
+        </form>
+
+        <div class="auth-footer" *ngIf="!auth.isAuthenticated()">
+          Don't have an account? <a routerLink="/register">Sign Up</a>
+        </div>
+
+        <div *ngIf="message">{{ message }}</div>
+        <div *ngIf="token && !auth.isAuthenticated()">Token: {{ token }}</div>
+      </div>
+    </main>
   `
 })
 export class LoginComponent {
+  email = '';
   username = '';
   password = '';
   pending = false;
   message = '';
   token: string | null = null;
 
-  constructor(private auth: AuthService) {}
+  constructor(public auth: AuthService, private router: Router) {}
 
   async submit() {
     if (this.pending) return;
+    if (!this.username || !this.email || !this.password) {
+      this.message = 'Username, email, and password are required.';
+      return;
+    }
     this.pending = true;
     this.message = '';
     this.token = null;
     try {
       const token = await firstValueFrom(
-        this.auth.login({ username: this.username, password: this.password })
+        this.auth.login({ username: this.username, password: this.password }, this.email)
       );
       this.token = token;
-      this.message = 'Logged in.';
+      console.log('Login success', { token, email: this.email, username: this.username });
+      this.message = 'Logged in. Redirecting...';
+      await this.router.navigate(['/']);
     } catch (err: any) {
       this.message = 'Login failed.';
     } finally {
       this.pending = false;
     }
+  }
+
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
   }
 }

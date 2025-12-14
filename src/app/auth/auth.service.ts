@@ -20,6 +20,7 @@ type AuthResponse = string; // backend returns raw token string
 type UserSession = {
   token: string;
   username: string | null;
+  email: string | null;
 };
 
 @Injectable({
@@ -29,27 +30,29 @@ export class AuthService {
   private readonly baseUrl = '/auth';
   private readonly tokenKey = 'auth_token';
   private readonly usernameKey = 'auth_username';
+  private readonly emailKey = 'auth_email';
   private readonly sessionState = signal<UserSession | null>(this.hydrateSession());
   readonly session = this.sessionState.asReadonly();
   readonly isAuthenticated = computed(() => !!this.sessionState());
 
   constructor(private http: HttpClient) {}
 
-  login(payload: LoginRequest) {
+  login(payload: LoginRequest, emailForSession?: string) {
     return this.http
       .post<AuthResponse>(`${this.baseUrl}/login`, payload, { responseType: 'text' as 'json' })
-      .pipe(tap((token) => this.persistSession(token, payload.username)));
+      .pipe(tap((token) => this.persistSession(token, payload.username, emailForSession ?? null)));
   }
 
   register(payload: RegisterRequest) {
     return this.http
       .post<AuthResponse>(`${this.baseUrl}/register`, payload, { responseType: 'text' as 'json' })
-      .pipe(tap((token) => this.persistSession(token, payload.username)));
+      .pipe(tap((token) => this.persistSession(token, payload.username, payload.email)));
   }
 
   logout() {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.usernameKey);
+    localStorage.removeItem(this.emailKey);
     this.sessionState.set(null);
   }
 
@@ -61,12 +64,19 @@ export class AuthService {
     return this.sessionState()?.username ?? null;
   }
 
-  private persistSession(token: string, username: string | null) {
+  getEmail(): string | null {
+    return this.sessionState()?.email ?? null;
+  }
+
+  private persistSession(token: string, username: string | null, email: string | null) {
     localStorage.setItem(this.tokenKey, token);
     if (username) {
       localStorage.setItem(this.usernameKey, username);
     }
-    this.sessionState.set({ token, username });
+    if (email) {
+      localStorage.setItem(this.emailKey, email);
+    }
+    this.sessionState.set({ token, username, email: email ?? localStorage.getItem(this.emailKey) });
   }
 
   private hydrateSession(): UserSession | null {
@@ -75,6 +85,7 @@ export class AuthService {
       return null;
     }
     const username = localStorage.getItem(this.usernameKey);
-    return { token, username };
+    const email = localStorage.getItem(this.emailKey);
+    return { token, username, email };
   }
 }
