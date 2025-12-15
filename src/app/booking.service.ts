@@ -20,8 +20,9 @@ export type BookingRecord = {
   providedIn: 'root'
 })
 export class BookingService {
-  private readonly baseUrl = '/booking/api/booking';
-  private readonly flightBaseUrl = '/flight/api/flight';
+  private readonly apiBase = window.location.port === '4200' ? '' : 'http://localhost:9000';
+  private readonly baseUrl = `${this.apiBase}/booking/api/booking`;
+  private readonly flightBaseUrl = `${this.apiBase}/flight/api/flight`;
 
   constructor(private http: HttpClient) {}
 
