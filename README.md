@@ -43,23 +43,27 @@ User history uses the stored JWT and email from session to call `/booking/api/bo
 ## Search Flights Showcase
 Search flights uses cached flight data from `/flight/api/flight/getAllFlights` with inline typeahead suggestions (no dropdowns). 
 <p align="center">
-  <img src="repository-media/search_flight_demo.gif" alt="Search flights preview" />
+  <img src="repository-media/flightsearch_manual.gif" alt="Search flights preview" />
   <br />
-  <small>Figure 5. Search flights preview</small>
+  <small>Figure 5.1. Search flights preview - Manual</small>
 </p>
-
+<p align="center">
+  <img src="repository-media/flightsearch_interactive.gif" alt="Search flights preview" />
+  <br />
+  <small>Figure 5.2. Search flights preview - Interactive</small>
+</p>
 ## Validation Showcases
 
 ### User Validation
 <p align="center">
-  <img src="repository-media/login_validation.gif" alt="Login validation preview" />
+  <img src="repository-media/uservalidation.gif" alt="Login validation preview" />
   <br />  
   <small>Figure 6. User validation</small>
 </p>
 
 ### Search Flight Validation
 <p align="center">
-  <img src="repository-media/search_validation.gif" alt="Search flight validation preview" />
+  <img src="repository-media/flightSearch_validation.gif" alt="Search flight validation preview" />
   <br />
   <small>Figure 8. Search flight validation</small>
 </p>
