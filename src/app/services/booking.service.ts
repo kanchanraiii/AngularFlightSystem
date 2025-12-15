@@ -33,4 +33,8 @@ export class BookingService {
   getAllFlights() {
     return this.http.get<any[]>(`${this.flightBaseUrl}/getAllFlights`);
   }
+
+  getAllAirlines() {
+    return this.http.get<any[]>(`${this.flightBaseUrl}/getAllAirlines`);
+  }
 }

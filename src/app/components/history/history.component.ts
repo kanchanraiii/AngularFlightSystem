@@ -71,10 +71,6 @@ import { firstValueFrom } from 'rxjs';
                 <div class="history-detail" *ngIf="expanded === b" [class.printable]="printTarget === b">
                   <h4>Booking Details</h4>
                   <div class="history-row">
-                    <span class="label">Booking ID</span>
-                    <span class="value">{{ b.bookingId }}</span>
-                  </div>
-                  <div class="history-row">
                     <span class="label">Trip Type</span>
                     <span class="value">{{ b.tripType }}</span>
                   </div>
@@ -89,10 +85,6 @@ import { firstValueFrom } from 'rxjs';
                   <div class="history-row" *ngIf="b.pnrReturn">
                     <span class="label">PNR Return</span>
                     <span class="value">{{ b.pnrReturn }}</span>
-                  </div>
-                  <div class="history-row">
-                    <span class="label">Outbound Flight</span>
-                    <span class="value">{{ b.outboundFlightId }}</span>
                   </div>
                   <ng-container *ngIf="flightInfo(b.outboundFlightId) as f">
                     <div class="history-row">
@@ -138,9 +130,20 @@ import { firstValueFrom } from 'rxjs';
                     <span class="label">Contact</span>
                     <span class="value">{{ b.contactName }} ({{ b.contactEmail }})</span>
                   </div>
-                  <div class="history-row">
-                    <span class="label">Passengers</span>
-                    <span class="value">{{ b.totalPassengers }}</span>
+                  <div class="history-row" *ngIf="passengerList(b.passengers).length">
+                    <span class="label">Passenger Details</span>
+                    <span class="value">
+                      <div class="passenger-list">
+                        <div class="passenger" *ngFor="let p of passengerList(b.passengers)">
+                          <div class="passenger-row"><strong>Name:</strong> {{ p.name || 'N/A' }}</div>
+                          <div class="passenger-row"><strong>Age:</strong> {{ p.age ?? 'N/A' }}</div>
+                          <div class="passenger-row"><strong>Gender:</strong> {{ p.gender || 'N/A' }}</div>
+                          <div class="passenger-row" *ngIf="p.seatOutbound || p.seatReturn">
+                            <strong>Seat:</strong> {{ p.seatOutbound || p.seatReturn }}
+                          </div>
+                        </div>
+                      </div>
+                    </span>
                   </div>
                   <button class="search-btn" type="button" (click)="printTicket(b)">Print Ticket</button>
                 </div>
@@ -241,6 +244,10 @@ export class HistoryComponent implements OnInit {
     const f = this.flightInfo(id);
     if (!f) return null;
     return `${f.sourceCity ?? ''} → ${f.destinationCity ?? ''}`.trim();
+  }
+
+  passengerList(passengers: any): any[] {
+    return Array.isArray(passengers) ? passengers : [];
   }
 
   printTicket(record: BookingRecord) {

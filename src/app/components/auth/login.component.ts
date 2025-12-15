@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { firstValueFrom } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
@@ -21,18 +21,36 @@ import { Router, RouterLink } from '@angular/router';
       </div>
     </nav>
 
-    <div class="toast" *ngIf="toastMessage" [class.success]="toastType === 'success'" [class.error]="toastType === 'error'">
+    <div
+      class="toast"
+      *ngIf="toastMessage"
+      [class.success]="toastType === 'success'"
+      [class.error]="toastType === 'error'"
+      [class.hide]="!toastVisible"
+    >
       {{ toastMessage }}
     </div>
 
-    <main class="main">
-      <div class="auth-card">
-        <h1 class="card-heading">Welcome Back</h1>
-        <p class="auth-subtitle">Login to your account</p>
+    <main class="auth-shell login-shell">
+      <div class="hero-image login-hero">
+        <div class="hero-overlay">
+          <p class="eyebrow accent">Flight Booking</p>
+          <h2>Plan your next journey</h2>
+          <p>Search, book, and manage your tickets with a quick sign-in.</p>
+        </div>
+      </div>
 
-        <p *ngIf="auth.isAuthenticated()">You are already logged in. Go to <a routerLink="/protected">Protected</a>.</p>
+      <div class="auth-card login-card">
+        <div class="auth-header">
+          <p class="eyebrow accent">Sign in</p>
+          <h1>Welcome back</h1>
+          <p class="auth-subtitle spaced">Access your bookings and search flights faster.</p>
+          <p *ngIf="auth.isAuthenticated()" class="auth-note">
+            You are already logged in. Head to <a routerLink="/">home</a> or <a routerLink="/history">history</a>.
+          </p>
+        </div>
 
-        <form *ngIf="!auth.isAuthenticated()" class="auth-form" (ngSubmit)="submit()" #form="ngForm">
+        <form *ngIf="!auth.isAuthenticated()" class="auth-form" (ngSubmit)="submit(form)" #form="ngForm" novalidate>
           <div class="input-group">
             <label>Username</label>
             <input type="text" name="username" placeholder="Enter your username" [(ngModel)]="username" required />
@@ -40,7 +58,14 @@ import { Router, RouterLink } from '@angular/router';
 
           <div class="input-group">
             <label>Email</label>
-            <input type="email" name="email" placeholder="Enter your email" [(ngModel)]="email" required />
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              [(ngModel)]="email"
+              required
+              email
+            />
           </div>
 
           <div class="input-group">
@@ -48,17 +73,16 @@ import { Router, RouterLink } from '@angular/router';
             <input name="password" type="password" placeholder="Enter your password" [(ngModel)]="password" required />
           </div>
 
-          <div class="form-options"></div>
-
-          <button type="submit" class="auth-btn" [disabled]="form.invalid || pending">Login</button>
+          <button type="submit" class="auth-btn login-btn" [class.submitting]="pending" [disabled]="pending">
+            <span class="label">Login</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
         </form>
 
         <div class="auth-footer" *ngIf="!auth.isAuthenticated()">
           Don't have an account? <a routerLink="/register">Sign Up</a>
         </div>
 
-        <div *ngIf="message">{{ message }}</div>
-        <div *ngIf="token && !auth.isAuthenticated()">Token: {{ token }}</div>
       </div>
     </main>
   `
@@ -73,19 +97,24 @@ export class LoginComponent {
   toastMessage = '';
   toastType: 'success' | 'error' | '' = '';
   private toastTimeout: any;
+  toastVisible = false;
+  private readonly animationHoldMs = 1100;
 
   constructor(public auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
 
-  async submit() {
+  async submit(form: NgForm) {
     if (this.pending) return;
-    if (!this.username || !this.email || !this.password) {
-      this.message = 'Username, email, and password are required.';
+    if (form.invalid) {
+      this.message = 'Please enter username, valid email, and password.';
+      form.control.markAllAsTouched();
       this.showToast(this.message, 'error');
       return;
     }
     this.pending = true;
     this.message = '';
     this.token = null;
+    this.cdr.detectChanges();
+    await this.sleep(this.animationHoldMs);
     try {
       const token = await firstValueFrom(
         this.auth.login({ username: this.username, password: this.password }, this.email)
@@ -113,12 +142,21 @@ export class LoginComponent {
   private showToast(message: string, type: 'success' | 'error') {
     this.toastMessage = message;
     this.toastType = type;
+    this.toastVisible = true;
     this.cdr.detectChanges();
     clearTimeout(this.toastTimeout);
     this.toastTimeout = setTimeout(() => {
-      this.toastMessage = '';
-      this.toastType = '';
+      this.toastVisible = false;
       this.cdr.detectChanges();
+      setTimeout(() => {
+        this.toastMessage = '';
+        this.toastType = '';
+        this.cdr.detectChanges();
+      }, 250);
     }, 3000);
+  }
+
+  private sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
