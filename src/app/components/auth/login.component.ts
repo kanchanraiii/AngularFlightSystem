@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from './auth.service';
+import { AuthService } from '../../services/auth.service';
 import { firstValueFrom } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 

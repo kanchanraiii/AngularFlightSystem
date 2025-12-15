@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
-import { AuthService } from './auth/auth.service';
-import { BookingService } from './booking.service';
+import { AuthService } from '../../services/auth.service';
+import { BookingService } from '../../services/booking.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({

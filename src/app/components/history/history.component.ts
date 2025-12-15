@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from './auth/auth.service';
-import { BookingRecord, BookingService } from './booking.service';
+import { AuthService } from '../../services/auth.service';
+import { BookingRecord, BookingService } from '../../services/booking.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
