@@ -52,7 +52,6 @@ Search flights uses cached flight data from `/flight/api/flight/getAllFlights` w
   <br />
   <small>Figure 5.2. Search flights preview - Interactive</small>
 </p>
-## Validation Showcases
 
 ### User Validation
 <p align="center">
