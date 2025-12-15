@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './auth.service';
@@ -20,6 +20,10 @@ import { Router, RouterLink } from '@angular/router';
         </ng-container>
       </div>
     </nav>
+
+    <div class="toast" *ngIf="toastMessage" [class.success]="toastType === 'success'" [class.error]="toastType === 'error'">
+      {{ toastMessage }}
+    </div>
 
     <main class="main">
       <div class="auth-card">
@@ -66,13 +70,17 @@ export class LoginComponent {
   pending = false;
   message = '';
   token: string | null = null;
+  toastMessage = '';
+  toastType: 'success' | 'error' | '' = '';
+  private toastTimeout: any;
 
-  constructor(public auth: AuthService, private router: Router) {}
+  constructor(public auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   async submit() {
     if (this.pending) return;
     if (!this.username || !this.email || !this.password) {
       this.message = 'Username, email, and password are required.';
+      this.showToast(this.message, 'error');
       return;
     }
     this.pending = true;
@@ -85,16 +93,32 @@ export class LoginComponent {
       this.token = token;
       console.log('Login success', { token, email: this.email, username: this.username });
       this.message = 'Logged in. Redirecting...';
+      this.showToast('Logged in successfully', 'success');
+      this.cdr.detectChanges();
       await this.router.navigate(['/']);
     } catch (err: any) {
       this.message = 'Login failed.';
+      this.showToast('Login failed. Check your credentials.', 'error');
     } finally {
       this.pending = false;
+      this.cdr.detectChanges();
     }
   }
 
   logout() {
     this.auth.logout();
     this.router.navigate(['/login']);
+  }
+
+  private showToast(message: string, type: 'success' | 'error') {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.cdr.detectChanges();
+    clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      this.toastMessage = '';
+      this.toastType = '';
+      this.cdr.detectChanges();
+    }, 3000);
   }
 }

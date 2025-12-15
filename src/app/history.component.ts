@@ -68,7 +68,7 @@ import { firstValueFrom } from 'rxjs';
                   {{ expanded === b ? 'Hide Details' : 'View Details' }}
                 </button>
 
-                <div class="history-detail" *ngIf="expanded === b">
+                <div class="history-detail" *ngIf="expanded === b" [class.printable]="printTarget === b">
                   <h4>Booking Details</h4>
                   <div class="history-row">
                     <span class="label">Booking ID</span>
@@ -142,6 +142,7 @@ import { firstValueFrom } from 'rxjs';
                     <span class="label">Passengers</span>
                     <span class="value">{{ b.totalPassengers }}</span>
                   </div>
+                  <button class="search-btn" type="button" (click)="printTicket(b)">Print Ticket</button>
                 </div>
               </div>
             </div>
@@ -159,6 +160,7 @@ export class HistoryComponent implements OnInit {
   records: BookingRecord[] = [];
   expanded: BookingRecord | null = null;
   flightsById = new Map<string, any>();
+  printTarget: BookingRecord | null = null;
 
   constructor(
     public auth: AuthService,
@@ -241,7 +243,14 @@ export class HistoryComponent implements OnInit {
     return `${f.sourceCity ?? ''} → ${f.destinationCity ?? ''}`.trim();
   }
 
-  printTicket() {
-    window.print();
+  printTicket(record: BookingRecord) {
+    this.printTarget = record;
+    this.expanded = record;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      window.print();
+      this.printTarget = null;
+      this.cdr.detectChanges();
+    }, 50);
   }
 }
