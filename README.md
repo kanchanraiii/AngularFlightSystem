@@ -29,3 +29,11 @@ User history uses the stored JWT and email from session to call `/booking/api/bo
   <br />
   <small>Figure 3. User history preview</small>
 </p>
+
+## Search Flights Showcase
+Search flights uses cached flight data from `/flight/api/flight/getAllFlights` with inline typeahead suggestions (no dropdowns). 
+<p align="center">
+  <img src="repository-media/search_flight_demo.gif" alt="Search flights preview" />
+  <br />
+  <small>Figure 4. Search flights preview</small>
+</p>
