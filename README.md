@@ -20,16 +20,6 @@ Frontend API calls traverse the gateway on port 9000 to the flight and booking s
 
 [Report](https://github.com/kanchanraiii/AngularFlightSystem/raw/main/Week%208%20-%20Angular%20Flight%20Booking%20Sys.pdf)
 
-## Proxy Setup (Angular dev)
-- The dev server uses `proxy.conf.json` to forward `/auth`, `/flight`, and `/booking` calls to `http://localhost:9000`.
-- With `ng serve --proxy-config proxy.conf.json`, the app can call relative paths (e.g., `/auth/login`) without CORS errors.
-- In production builds, calls use the full gateway URL instead of the proxy.
-<p align="center">
-  <img src="repository-media/angular_proxy_flow.png" alt="Angular proxy flow" />
-  <br />
-  <small>Figure 2. Dev proxy flow (Angular → proxy.conf → gateway:9000)</small>
-</p>
-
 ## Frontend Authorization Flow
 
 <p align="center">
