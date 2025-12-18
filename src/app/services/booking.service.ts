@@ -23,7 +23,7 @@ export class BookingService {
   private readonly apiBase = window.location.port === '4200' ? '' : 'http://localhost:9000';
   private readonly baseUrl = `${this.apiBase}/booking/api/booking`;
   private readonly flightBaseUrl = `${this.apiBase}/flight/api/flight`;
-
+  private readonly bookingBaseUrl=`${this.apiBase}/booking/api/booking`;
   constructor(private http: HttpClient) {}
 
   getHistory(email: string) {
@@ -37,4 +37,8 @@ export class BookingService {
   getAllAirlines() {
     return this.http.get<any[]>(`${this.flightBaseUrl}/getAllAirlines`);
   }
+  bookFlights() {
+    return this.http.get<any[]>(`${this.bookingBaseUrl}/getAllAirlines`);
+  }
+  
 }

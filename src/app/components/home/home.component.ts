@@ -112,6 +112,7 @@ import { firstValueFrom } from 'rxjs';
               <th>Departure</th>
               <th>Arrival</th>
               <th>Price</th>
+              <th>Book Flight</th>
             </tr>
           </thead>
           <tbody>
@@ -123,6 +124,11 @@ import { firstValueFrom } from 'rxjs';
               <td>{{ f.departureDate }} · {{ f.departureTime }}</td>
               <td>{{ f.arrivalDate }} · {{ f.arrivalTime }}</td>
               <td class="price">₹ {{ f.price || 'N/A' }}</td>
+<td>
+  <a [href]="'http://localhost:4200/book-flight?flightId=' + f.flightId">
+    Book Now
+  </a>
+</td>
             </tr>
           </tbody>
         </table>
