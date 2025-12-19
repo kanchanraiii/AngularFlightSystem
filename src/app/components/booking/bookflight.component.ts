@@ -2,16 +2,21 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl:'./booking.html'
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule   
+  ],
+  templateUrl: './booking.html',
+  styleUrls: ['./booking.css']   
 })
 export class BookingComponent implements OnInit {
-
   tripType = '';
   contactName = '';
   contactEmail = '';
@@ -27,7 +32,9 @@ export class BookingComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public auth: AuthService,     
+    private router: Router        
   ) {}
 
   ngOnInit() {
@@ -35,11 +42,21 @@ export class BookingComponent implements OnInit {
   }
 
   addPassenger() {
-    this.passengers.push({ name: '', age: null, gender: '', seatOutbound: '' });
+    this.passengers.push({
+      name: '',
+      age: null,
+      gender: '',
+      seatOutbound: ''
+    });
   }
 
   removePassenger(index: number) {
     this.passengers.splice(index, 1);
+  }
+
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
   }
 
   submit(form: NgForm) {

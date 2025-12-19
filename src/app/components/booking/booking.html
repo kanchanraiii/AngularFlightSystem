@@ -1,82 +1,110 @@
-<div *ngIf="!flightId" style="color:red">
-      <h2>Invalid Access</h2>
-      <p>Flight ID is missing. Please select a flight first.</p>
-    </div>
+<nav class="navbar">
+  <a routerLink="/" class="logo">Flight Booking Sys</a>
 
-   
-    <div *ngIf="flightId && !bookingSuccess">
-      <h2>Flight Booking</h2>
+  <div class="nav-actions">
+    <button
+      class="signup"
+      *ngIf="auth.isAuthenticated()"
+      (click)="logout()">
+      Logout
+    </button>
 
-      <form #form="ngForm" (ngSubmit)="submit(form)">
+    <ng-container *ngIf="!auth.isAuthenticated()">
+      <button class="login" routerLink="/login">Login</button>
+      <button class="signup" routerLink="/register">Sign Up</button>
+    </ng-container>
+  </div>
+</nav>
 
+<div class="page-wrapper">
+
+  <!-- Invalid Form -->
+  <div *ngIf="!flightId" class="card error-card">
+    <h2>Invalid Access</h2>
+    <p>Flight ID is missing. Please select a flight first.</p>
+  </div>
+
+  <!-- Booking Form -->
+  <div *ngIf="flightId && !bookingSuccess" class="card booking-card">
+    <h2 class="title">Flight Booking</h2>
+
+    <form #form="ngForm" (ngSubmit)="submit(form)">
+
+      <div class="form-group">
         <label>Trip Type</label>
         <select name="tripType" [(ngModel)]="tripType" required>
           <option value="">Select</option>
           <option value="ONE_WAY">One Way</option>
           <option value="ROUND_TRIP">Round Trip</option>
         </select>
+      </div>
 
-        <br /><br />
-
+      <div class="form-group">
         <label>Contact Name</label>
         <input type="text" name="contactName" [(ngModel)]="contactName" required />
+      </div>
 
-        <br /><br />
-
+      <div class="form-group">
         <label>Contact Email</label>
         <input type="email" name="contactEmail" [(ngModel)]="contactEmail" required />
+      </div>
 
-        <br /><br />
+      <h3 class="section-title">Passengers</h3>
 
-        <h3>Passengers</h3>
+      <div class="passenger-list">
+        <div class="passenger-card" *ngFor="let p of passengers; let i = index">
 
-        <div *ngFor="let p of passengers; let i = index">
-          <h4>Passenger {{ i + 1 }}</h4>
+          <div class="passenger-header">
+            <span>Passenger {{ i + 1 }}</span>
+            <button
+              type="button"
+              class="remove-btn"
+              *ngIf="passengers.length > 1"
+              (click)="removePassenger(i)">
+              Remove
+            </button>
+          </div>
 
-          <input type="text" name="name{{i}}" [(ngModel)]="p.name" placeholder="Name" required />
-          <br />
+          <div class="grid">
+            <input type="text" name="name{{i}}" [(ngModel)]="p.name" placeholder="Name" required />
+            <input type="number" name="age{{i}}" [(ngModel)]="p.age" placeholder="Age" required />
+            <select name="gender{{i}}" [(ngModel)]="p.gender" required>
+              <option value="">Gender</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+            </select>
+            <input type="text" name="seat{{i}}" [(ngModel)]="p.seatOutbound" placeholder="Seat" required />
+          </div>
 
-          <input type="number" name="age{{i}}" [(ngModel)]="p.age" placeholder="Age" required />
-          <br />
-
-          <select name="gender{{i}}" [(ngModel)]="p.gender" required>
-            <option value="">Gender</option>
-            <option value="MALE">Male</option>
-            <option value="FEMALE">Female</option>
-          </select>
-          <br />
-
-          <input type="text" name="seat{{i}}" [(ngModel)]="p.seatOutbound" placeholder="Seat" required />
-          <br />
-
-          <button type="button" (click)="removePassenger(i)" *ngIf="passengers.length > 1">
-            Remove Passenger
-          </button>
-
-          <hr />
         </div>
+      </div>
 
-        <button type="button" (click)="addPassenger()">+ Add Passenger</button>
+      <button type="button" class="secondary-btn" (click)="addPassenger()">
+        + Add Passenger
+      </button>
 
-        <br /><br />
+      <button type="submit" class="primary-btn">
+        Book Ticket
+      </button>
 
-        <button type="submit">Book Ticket</button>
-      </form>
+      <p class="error-text">{{ message }}</p>
+    </form>
+  </div>
 
-      <p style="color:red">{{ message }}</p>
-    </div>
+  <!-- Confirmation -->
+  <div *ngIf="bookingSuccess" class="card confirmation-card">
+    <h2>Thank You! Booking Confirmed 🎉</h2>
 
-   
-    <div *ngIf="bookingSuccess" class="confirmation">
-      <h2>Thank You! Booking Confirmed</h2>
-
+    <div class="confirm-grid">
       <p><strong>Status:</strong> {{ bookingResponse.status }}</p>
       <p><strong>Booking ID:</strong> {{ bookingResponse.bookingId }}</p>
       <p><strong>Trip Type:</strong> {{ bookingResponse.tripType }}</p>
-      <p><strong>Outbound Flight ID:</strong> {{ bookingResponse.outboundFlightId }}</p>
+      <p><strong>Flight ID:</strong> {{ bookingResponse.outboundFlightId }}</p>
       <p><strong>PNR:</strong> {{ bookingResponse.pnrOutbound }}</p>
       <p><strong>Total Passengers:</strong> {{ bookingResponse.totalPassengers }}</p>
       <p><strong>Contact Name:</strong> {{ bookingResponse.contactName }}</p>
       <p><strong>Contact Email:</strong> {{ bookingResponse.contactEmail }}</p>
-
     </div>
+  </div>
+
+</div>
