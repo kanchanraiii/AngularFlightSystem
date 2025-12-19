@@ -19,6 +19,8 @@ export class HistoryComponent implements OnInit {
   expanded: BookingRecord | null = null;
   flightsById = new Map<string, any>();
   printTarget: BookingRecord | null = null;
+  toastMessage = '';
+  toastType: '' | 'success' | 'error' = '';
 
   constructor(
     public auth: AuthService,
@@ -114,5 +116,46 @@ export class HistoryComponent implements OnInit {
       this.printTarget = null;
       this.cdr.detectChanges();
     }, 50);
+  }
+
+  showToast(message: string, type: 'success' | 'error') {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.toastMessage = '';
+      this.toastType = '';
+      this.cdr.detectChanges();
+    }, 3000);
+  }
+
+  async cancelBooking(record: BookingRecord) {
+    const token = this.auth.getToken();
+    if (!token) {
+      this.showToast('Not authenticated', 'error');
+      return;
+    }
+    const pnr = (record.pnrOutbound || record.bookingId || '').toString();
+    if (!pnr) {
+      this.showToast('Missing PNR for this booking', 'error');
+      return;
+    }
+    this.pending = true;
+    try {
+      const res = await firstValueFrom(this.booking.cancelBooking(pnr.toUpperCase(), token));
+      const r: any = res;
+      if (r.status === 200 || r.status === 204) {
+        record.status = 'Cancelled';
+        this.showToast('Booking cancelled', 'success');
+        this.fetchHistory();
+      } else {
+        this.showToast('Failed to cancel booking', 'error');
+      }
+    } catch (err) {
+      this.showToast('Failed to cancel booking', 'error');
+    } finally {
+      this.pending = false;
+      this.cdr.detectChanges();
+    }
   }
 }

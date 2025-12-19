@@ -1,75 +1,127 @@
 <nav class="navbar">
-      <a routerLink="/" class="logo">Flight Booking Sys</a>
-      <div class="nav-actions">
-        <button class="signup" *ngIf="auth.isAuthenticated()" (click)="logout()">Logout</button>
-        <ng-container *ngIf="!auth.isAuthenticated()">
-          <button class="login" routerLink="/login">Login</button>
-          <button class="signup" routerLink="/register">Sign Up</button>
-        </ng-container>
-      </div>
-    </nav>
+  <a routerLink="/" class="logo">Flight Booking Sys</a>
 
-    <div
-      class="toast"
-      *ngIf="toastMessage"
-      [class.success]="toastType === 'success'"
-      [class.error]="toastType === 'error'"
-      [class.hide]="!toastVisible"
-    >
-      {{ toastMessage }}
+  <div class="nav-actions">
+    <button
+      type="button"
+      class="signup"
+      *ngIf="auth.isAuthenticated()"
+      (click)="logout()">
+      Logout
+    </button>
+
+    <ng-container *ngIf="!auth.isAuthenticated()">
+      <button type="button" class="login" routerLink="/login">Login</button>
+      <button type="button" class="signup" routerLink="/register">Sign Up</button>
+    </ng-container>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div
+  class="toast"
+  *ngIf="toastVisible"
+  [class.success]="toastType === 'success'"
+  [class.error]="toastType === 'error'">
+
+  <span>{{ toastMessage }}</span>
+
+  <!-- CONFIRM ACTIONS -->
+  <div class="toast-actions" *ngIf="confirmLogout">
+    <button
+      type="button"
+      class="toast-btn yes"
+      (click)="confirmYes()">
+      Yes
+    </button>
+
+    <button
+      type="button"
+      class="toast-btn no"
+      (click)="confirmNo()">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<main class="auth-shell login-shell">
+
+  <div class="hero-image login-hero">
+    <div class="hero-overlay">
+      <p class="eyebrow accent">Flight Booking</p>
+      <h2>Plan your next journey</h2>
+      <p>Search, book, and manage your tickets with a quick sign-in.</p>
+    </div>
+  </div>
+
+  <div class="auth-card login-card">
+    <div class="auth-header">
+      <p class="eyebrow accent">Sign in</p>
+      <h1>Welcome back</h1>
+      <p class="auth-subtitle spaced">
+        Access your bookings and search flights faster.
+      </p>
+
+      <p *ngIf="auth.isAuthenticated()" class="auth-note">
+        You are already logged in.
+        Head to <a routerLink="/">home</a> or
+        <a routerLink="/history">history</a>.
+      </p>
     </div>
 
-    <main class="auth-shell login-shell">
-      <div class="hero-image login-hero">
-        <div class="hero-overlay">
-          <p class="eyebrow accent">Flight Booking</p>
-          <h2>Plan your next journey</h2>
-          <p>Search, book, and manage your tickets with a quick sign-in.</p>
-        </div>
+    <form
+      *ngIf="!auth.isAuthenticated()"
+      class="auth-form"
+      (ngSubmit)="submit(form)"
+      #form="ngForm"
+      novalidate>
+
+      <div class="input-group">
+        <label>Username</label>
+        <input
+          type="text"
+          name="username"
+          placeholder="Enter your username"
+          [(ngModel)]="username"
+          required />
       </div>
 
-      <div class="auth-card login-card">
-        <div class="auth-header">
-          <p class="eyebrow accent">Sign in</p>
-          <h1>Welcome back</h1>
-          <p class="auth-subtitle spaced">Access your bookings and search flights faster.</p>
-          <p *ngIf="auth.isAuthenticated()" class="auth-note">
-            You are already logged in. Head to <a routerLink="/">home</a> or <a routerLink="/history">history</a>.
-          </p>
-        </div>
-
-        <form *ngIf="!auth.isAuthenticated()" class="auth-form" (ngSubmit)="submit(form)" #form="ngForm" novalidate>
-          <div class="input-group">
-            <label>Username</label>
-            <input type="text" name="username" placeholder="Enter your username" [(ngModel)]="username" required />
-          </div>
-
-          <div class="input-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              [(ngModel)]="email"
-              required
-              email
-            />
-          </div>
-
-          <div class="input-group">
-            <label>Password</label>
-            <input name="password" type="password" placeholder="Enter your password" [(ngModel)]="password" required />
-          </div>
-
-          <button type="submit" class="auth-btn login-btn" [class.submitting]="pending" [disabled]="pending">
-            <span class="label">Login</span>
-            <span class="spinner" aria-hidden="true"></span>
-          </button>
-        </form>
-
-        <div class="auth-footer" *ngIf="!auth.isAuthenticated()">
-          Don't have an account? <a routerLink="/register">Sign Up</a>
-        </div>
-
+      <div class="input-group">
+        <label>Email</label>
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter your email"
+          [(ngModel)]="email"
+          required
+          email />
       </div>
-    </main>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input
+          type="password"
+          name="password"
+          placeholder="Enter your password"
+          [(ngModel)]="password"
+          required />
+      </div>
+
+      <button
+        type="submit"
+        class="auth-btn login-btn"
+        [class.submitting]="pending"
+        [disabled]="pending">
+
+        <span class="label">Login</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <div class="auth-footer" *ngIf="!auth.isAuthenticated()">
+      Don't have an account?
+      <a routerLink="/register">Sign Up</a>
+    </div>
+  </div>
+
+</main>

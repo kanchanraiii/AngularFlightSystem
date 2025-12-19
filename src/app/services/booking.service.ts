@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 export type BookingRecord = {
   bookingId: string;
@@ -41,4 +43,16 @@ export class BookingService {
     return this.http.get<any[]>(`${this.bookingBaseUrl}/getAllAirlines`);
   }
   
-}
+  cancelBooking(pnr: string, token: string | null) {
+    const headers: Record<string, string> | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
+    const url = `${this.baseUrl}/cancel/${encodeURIComponent(pnr)}`;
+    return this.http.delete<any>(url, { headers, observe: 'response' as const }).pipe(
+      catchError((err) => {
+        if (err && err.status === 405) {
+          return this.http.post<any>(url, null, { headers, observe: 'response' as const, responseType: 'json' as const });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+} 

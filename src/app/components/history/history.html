@@ -134,6 +134,7 @@
                     </span>
                   </div>
                   <button class="search-btn" type="button" (click)="printTicket(b)">Print Ticket</button>
+                  <button class="auth-btn" type="button" *ngIf="b.status.toLowerCase() !== 'cancelled'" (click)="cancelBooking(b)" style="margin-left:8px">Cancel Booking</button>
                 </div>
               </div>
             </div>
@@ -142,3 +143,5 @@
         </div>
       </div>
     </main>
+
+    <div class="toast" *ngIf="toastMessage" [class.success]="toastType==='success'" [class.error]="toastType==='error'">{{ toastMessage }}</div>
