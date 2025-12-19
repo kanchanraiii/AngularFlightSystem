@@ -19,6 +19,7 @@ export class HomeComponent implements OnInit {
   departureDate = '';
   returnDate = '';
   flights: any[] = [];
+  today: string = '';
   filteredFlights: any[] = [];
   sourceSuggestions: string[] = [];
   destSuggestions: string[] = [];
@@ -68,6 +69,8 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.loadFlights();
+    const date = new Date();
+    this.today = date.toISOString().split('T')[0];
   }
 
   async loadFlights() {

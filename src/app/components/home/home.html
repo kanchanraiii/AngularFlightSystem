@@ -67,12 +67,12 @@
 
           <div class="input-group">
             <label>Departure Date</label>
-            <input type="date" [(ngModel)]="departureDate" />
+            <input type="date" [(ngModel)]="departureDate" [min]="today" />
           </div>
 
           <div class="input-group" *ngIf="tripType === 'round-trip'">
             <label>Return Date</label>
-            <input type="date" [(ngModel)]="returnDate" />
+            <input type="date" [(ngModel)]="returnDate" [min]="today" />
           </div>
         </div>
 
