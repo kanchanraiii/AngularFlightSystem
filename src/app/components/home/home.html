@@ -1,0 +1,147 @@
+ <div
+      class="toast"
+      *ngIf="toastMessage"
+      [class.success]="toastType === 'success'"
+      [class.error]="toastType === 'error'"
+      [class.hide]="!toastVisible"
+    >
+      {{ toastMessage }}
+    </div>
+
+    <nav class="navbar">
+      <a routerLink="/" class="logo">Flight Booking Sys</a>
+      <div class="nav-actions">
+        <ng-container *ngIf="auth.isAuthenticated(); else guestActions">
+          <button class="login" routerLink="/history">User History</button>
+          <button class="signup" (click)="logout()">Logout</button>
+        </ng-container>
+        <ng-template #guestActions>
+          <button class="login" routerLink="/login">Login</button>
+          <button class="signup" routerLink="/register">Sign Up</button>
+        </ng-template>
+      </div>
+    </nav>
+
+    <main class="search-shell">
+      <section class="search-hero hero-with-image">
+        <div class="hero-copy">
+          <p class="eyebrow accent">Flight Booking</p>
+          <h1 class="search-title">Find your next flight.</h1>
+          <p class="search-subtitle">
+            Compare one-way or round-trip journeys in seconds. Live routes, clear pricing, no fuss.
+          </p>
+          <div class="hero-highlights">
+            <div class="hero-badge">
+              <div>
+                <p class="badge-title">Smart routes</p>
+                <p class="badge-sub">Type to search cities instantly.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-photo" [style.background-image]="'url(' + imageFor(to || from) + ')'"></div>
+      </section>
+
+      <section class="search-card search-card-modern">
+        <div class="trip-type pills">
+          <button [class.active]="tripType === 'one-way'" (click)="setTripType('one-way')">One Way</button>
+          <button [class.active]="tripType === 'round-trip'" (click)="setTripType('round-trip')">Round Trip</button>
+        </div>
+
+        <div class="form-grid">
+          <div class="input-group">
+            <label>From</label>
+            <input type="text" placeholder="Departure city" [(ngModel)]="from" (input)="onSourceInput()" />
+            <ul class="suggestions" *ngIf="sourceSuggestions.length">
+              <li *ngFor="let s of sourceSuggestions" (click)="selectSource(s)">{{ s }}</li>
+            </ul>
+          </div>
+
+          <div class="input-group">
+            <label>To</label>
+            <input type="text" placeholder="Destination city" [(ngModel)]="to" (input)="onDestInput()" />
+            <ul class="suggestions" *ngIf="destSuggestions.length">
+              <li *ngFor="let s of destSuggestions" (click)="selectDest(s)">{{ s }}</li>
+            </ul>
+          </div>
+
+          <div class="input-group">
+            <label>Departure Date</label>
+            <input type="date" [(ngModel)]="departureDate" />
+          </div>
+
+          <div class="input-group" *ngIf="tripType === 'round-trip'">
+            <label>Return Date</label>
+            <input type="date" [(ngModel)]="returnDate" />
+          </div>
+        </div>
+
+        <button class="search-btn" (click)="search()">Search flights</button>
+
+      </section>
+    </main>
+
+    <section class="results-pane" *ngIf="searchAttempted">
+      <div class="results-header">
+        <h2>Results</h2>
+        <span class="badge" *ngIf="filteredFlights.length">{{ filteredFlights.length }} found</span>
+        <span class="badge muted" *ngIf="!filteredFlights.length">No flights available</span>
+      </div>
+
+      <div *ngIf="filteredFlights.length; else noFlights" class="table-wrapper">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Flight Code</th>
+              <th>Airline</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Departure</th>
+              <th>Arrival</th>
+              <th>Price</th>
+              <th>Book Flight</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of filteredFlights">
+              <td>{{ f.flightNumber || f.airlineCode || '—' }}</td>
+              <td>{{ airlineFor(f) }}</td>
+              <td>{{ f.sourceCity }}</td>
+              <td>{{ f.destinationCity }}</td>
+              <td>{{ f.departureDate }} · {{ f.departureTime }}</td>
+              <td>{{ f.arrivalDate }} · {{ f.arrivalTime }}</td>
+              <td class="price">₹ {{ f.price || 'N/A' }}</td>
+<td>
+  <a [href]="'http://localhost:4200/book-flight?flightId=' + f.flightId">
+    Book Now
+  </a>
+</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noFlights>
+        <div class="empty-state">
+          <p>No flights match your search yet.</p>
+        </div>
+      </ng-template>
+    </section>
+
+    <section class="locations-pane" *ngIf="availableCities.length">
+      <div class="locations-header">
+        <h2>Available Destinations</h2>
+      </div>
+      <div class="location-grid">
+        <article class="location-card" *ngFor="let city of availableCities">
+          <div class="location-photo" [style.background-image]="'url(' + imageFor(city) + ')'"></div>
+          <div class="location-info">
+            <p class="value strong">{{ city }}</p>
+          </div>
+          <div class="location-actions">
+            <button class="ghost-btn full" type="button" (click)="setCity(city, 'from')">Set as Source</button>
+            <button class="ghost-btn full" type="button" (click)="setCity(city, 'to')">Set as Destination</button>
+          </div>
+        </article>
+      </div>
+    </section>

@@ -79,7 +79,4 @@
       <p><strong>Contact Name:</strong> {{ bookingResponse.contactName }}</p>
       <p><strong>Contact Email:</strong> {{ bookingResponse.contactEmail }}</p>
 
-      <div *ngIf="bookingResponse.warnings?.length">
-        <p style="color: orange;"> {{ bookingResponse.warnings[0] }}</p>
-      </div>
     </div>

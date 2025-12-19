@@ -1,0 +1,144 @@
+<nav class="navbar">
+      <a routerLink="/" class="logo">Flight Booking Sys</a>
+      <div class="nav-actions">
+        <button class="signup" *ngIf="auth.isAuthenticated()" (click)="logout()">Logout</button>
+        <ng-container *ngIf="!auth.isAuthenticated()">
+          <button class="login" routerLink="/login">Login</button>
+          <button class="signup" routerLink="/register">Sign Up</button>
+        </ng-container>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="search-card" style="max-width: 600px; width: 100%;">
+        <h1 class="card-heading">User History</h1>
+        <p *ngIf="!auth.isAuthenticated()">Please log in to view your history.</p>
+        <div *ngIf="auth.isAuthenticated()">
+          <p *ngIf="!email">No email found for this session. Please log in again.</p>
+          <div *ngIf="pending && !records.length">Loading...</div>
+          <div *ngIf="error" style="color: red;">{{ error }}</div>
+
+          <div *ngIf="records.length">
+            <h3 style="margin-top: 16px;">Bookings ({{ records.length }})</h3>
+            <div class="history-list">
+              <div class="history-item" *ngFor="let b of records" [class.selected]="expanded === b">
+                <div class="history-row">
+                  <span class="label">PNR</span>
+                  <span class="value">{{ b.pnrOutbound || 'N/A' }}</span>
+                </div>
+                <div class="history-row">
+                  <span class="label">Status</span>
+                  <span class="value">{{ b.status }}</span>
+                </div>
+                <div class="history-row">
+                  <span class="label">Source</span>
+                  <span class="value">
+                    <ng-container *ngIf="flightInfo(b.outboundFlightId) as f">
+                      {{ f.sourceCity || 'N/A' }}
+                    </ng-container>
+                    <ng-container *ngIf="!flightInfo(b.outboundFlightId)">
+                      N/A
+                    </ng-container>
+                  </span>
+                </div>
+                <div class="history-row">
+                  <span class="label">Destination</span>
+                  <span class="value">
+                    <ng-container *ngIf="flightInfo(b.outboundFlightId) as f">
+                      {{ f.destinationCity || 'N/A' }}
+                    </ng-container>
+                    <ng-container *ngIf="!flightInfo(b.outboundFlightId)">
+                      N/A
+                    </ng-container>
+                  </span>
+                </div>
+                <button class="auth-btn" type="button" style="margin-top: 8px;" (click)="toggle(b)">
+                  {{ expanded === b ? 'Hide Details' : 'View Details' }}
+                </button>
+
+                <div class="history-detail" *ngIf="expanded === b" [class.printable]="printTarget === b">
+                  <h4>Booking Details</h4>
+                  <div class="history-row">
+                    <span class="label">Trip Type</span>
+                    <span class="value">{{ b.tripType }}</span>
+                  </div>
+                  <div class="history-row">
+                    <span class="label">Status</span>
+                    <span class="value">{{ b.status }}</span>
+                  </div>
+                  <div class="history-row">
+                    <span class="label">PNR Outbound</span>
+                    <span class="value">{{ b.pnrOutbound || 'N/A' }}</span>
+                  </div>
+                  <div class="history-row" *ngIf="b.pnrReturn">
+                    <span class="label">PNR Return</span>
+                    <span class="value">{{ b.pnrReturn }}</span>
+                  </div>
+                  <ng-container *ngIf="flightInfo(b.outboundFlightId) as f">
+                    <div class="history-row">
+                      <span class="label">Flight Number</span>
+                      <span class="value">{{ f.flightNumber || f.airlineCode || 'N/A' }}</span>
+                    </div>
+                    <div class="history-row">
+                      <span class="label">Route</span>
+                      <span class="value">{{ f.sourceCity || 'N/A' }} → {{ f.destinationCity || 'N/A' }}</span>
+                    </div>
+                    <div class="history-row">
+                      <span class="label">Departure</span>
+                      <span class="value">{{ f.departureDate || 'N/A' }} {{ f.departureTime || '' }}</span>
+                    </div>
+                    <div class="history-row">
+                      <span class="label">Arrival</span>
+                      <span class="value">{{ f.arrivalDate || 'N/A' }} {{ f.arrivalTime || '' }}</span>
+                    </div>
+                  </ng-container>
+                  <div class="history-row" *ngIf="b.returnFlight">
+                    <span class="label">Return Flight</span>
+                    <span class="value">{{ b.returnFlight }}</span>
+                  </div>
+                  <ng-container *ngIf="b.returnFlight && flightInfo(b.returnFlight) as r">
+                    <div class="history-row">
+                      <span class="label">Return Flight No.</span>
+                      <span class="value">{{ r.flightNumber || r.airlineCode || 'N/A' }}</span>
+                    </div>
+                    <div class="history-row">
+                      <span class="label">Return Route</span>
+                      <span class="value">{{ r.sourceCity || 'N/A' }} → {{ r.destinationCity || 'N/A' }}</span>
+                    </div>
+                    <div class="history-row">
+                      <span class="label">Return Departure</span>
+                      <span class="value">{{ r.departureDate || 'N/A' }} {{ r.departureTime || '' }}</span>
+                    </div>
+                    <div class="history-row">
+                      <span class="label">Return Arrival</span>
+                      <span class="value">{{ r.arrivalDate || 'N/A' }} {{ r.arrivalTime || '' }}</span>
+                    </div>
+                  </ng-container>
+                  <div class="history-row">
+                    <span class="label">Contact</span>
+                    <span class="value">{{ b.contactName }} ({{ b.contactEmail }})</span>
+                  </div>
+                  <div class="history-row" *ngIf="passengerList(b.passengers).length">
+                    <span class="label">Passenger Details</span>
+                    <span class="value">
+                      <div class="passenger-list">
+                        <div class="passenger" *ngFor="let p of passengerList(b.passengers)">
+                          <div class="passenger-row"><strong>Name:</strong> {{ p.name || 'N/A' }}</div>
+                          <div class="passenger-row"><strong>Age:</strong> {{ p.age ?? 'N/A' }}</div>
+                          <div class="passenger-row"><strong>Gender:</strong> {{ p.gender || 'N/A' }}</div>
+                          <div class="passenger-row" *ngIf="p.seatOutbound || p.seatReturn">
+                            <strong>Seat:</strong> {{ p.seatOutbound || p.seatReturn }}
+                          </div>
+                        </div>
+                      </div>
+                    </span>
+                  </div>
+                  <button class="search-btn" type="button" (click)="printTicket(b)">Print Ticket</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!records.length && !pending && !error">No history loaded yet.</div>
+        </div>
+      </div>
+    </main>
