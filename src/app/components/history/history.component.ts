@@ -24,6 +24,19 @@ export class HistoryComponent implements OnInit {
   cancelling = new Set<string>();
 
   cancelTarget: BookingRecord | null = null;
+filter: 'ALL' | 'CONFIRMED' | 'CANCELLED' = 'ALL';
+
+get filteredRecords(): BookingRecord[] {
+  if (this.filter === 'ALL') return this.records;
+
+  return this.records.filter(r =>
+    r.status?.toUpperCase() === this.filter
+  );
+}
+
+setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
+  this.filter = value;
+}
 
   constructor(
     public auth: AuthService,

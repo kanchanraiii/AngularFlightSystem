@@ -10,226 +10,193 @@
 </nav>
 
 <main class="main">
-  <div class="search-card" style="max-width: 600px; width: 100%;">
+  <div class="search-card" style="max-width:1100px;width:100%;">
+
     <h1 class="card-heading">User History</h1>
-    <p *ngIf="!auth.isAuthenticated()">Please log in to view your history.</p>
 
-    <div *ngIf="auth.isAuthenticated()">
-      <p *ngIf="!email">No email found for this session. Please log in again.</p>
-      <div *ngIf="pending && !records.length">Loading...</div>
-      <div *ngIf="error" style="color: red;">{{ error }}</div>
+    <div style="display:flex; gap:12px; margin:16px 0;">
+      <button (click)="setFilter('ALL')" style="padding:8px 16px;border-radius:20px"
+        [style.background]="filter==='ALL' ? '#1976d2' : '#fff'"
+        [style.color]="filter==='ALL' ? '#fff' : '#000'">All</button>
 
-      <div *ngIf="records.length">
-        <h3 style="margin-top: 16px;">Bookings ({{ records.length }})</h3>
+      <button (click)="setFilter('CONFIRMED')" style="padding:8px 16px;border-radius:20px"
+        [style.background]="filter==='CONFIRMED' ? '#2e7d32' : '#fff'"
+        [style.color]="filter==='CONFIRMED' ? '#fff' : '#000'">Confirmed</button>
 
-        <div class="history-list">
-          <div
-            class="history-item"
-            *ngFor="let b of records"
-            [class.selected]="expanded === b">
+      <button (click)="setFilter('CANCELLED')" style="padding:8px 16px;border-radius:20px"
+        [style.background]="filter==='CANCELLED' ? '#c62828' : '#fff'"
+        [style.color]="filter==='CANCELLED' ? '#fff' : '#000'">Cancelled</button>
+    </div>
 
-            <div class="history-row">
-              <span class="label">PNR</span>
-              <span class="value">{{ b.pnrOutbound || 'N/A' }}</span>
-            </div>
+    <div *ngIf="pending">Loading...</div>
+    <div *ngIf="error" style="color:red">{{ error }}</div>
 
-            <div class="history-row">
-              <span class="label">Status</span>
-              <span class="value">{{ b.status }}</span>
-            </div>
+    <div *ngIf="filteredRecords.length"
+      style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px">
 
-            <div class="history-row">
-              <span class="label">Source</span>
-              <span class="value">
-                <ng-container *ngIf="flightInfo(b.outboundFlightId) as f">
-                  {{ f.sourceCity || 'N/A' }}
-                </ng-container>
-                <ng-container *ngIf="!flightInfo(b.outboundFlightId)">N/A</ng-container>
-              </span>
-            </div>
+      <div *ngFor="let b of filteredRecords"
+        style="background:#fff;border-radius:14px;padding:16px;
+               box-shadow:0 8px 20px rgba(0,0,0,0.06);
+               display:flex;flex-direction:column;justify-content:space-between">
 
-            <div class="history-row">
-              <span class="label">Destination</span>
-              <span class="value">
-                <ng-container *ngIf="flightInfo(b.outboundFlightId) as f">
-                  {{ f.destinationCity || 'N/A' }}
-                </ng-container>
-                <ng-container *ngIf="!flightInfo(b.outboundFlightId)">N/A</ng-container>
-              </span>
-            </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>PNR: {{ b.pnrOutbound || 'N/A' }}</strong>
 
-            <button
-              class="auth-btn"
-              type="button"
-              style="margin-top: 8px;"
-              (click)="toggle(b)">
-              {{ expanded === b ? 'Hide Details' : 'View Details' }}
-            </button>
-
-            <div
-              class="history-detail"
-              *ngIf="expanded === b"
-              [class.printable]="printTarget === b">
-
-              <h4>Booking Details</h4>
-
-              <div class="history-row">
-                <span class="label">Trip Type</span>
-                <span class="value">{{ b.tripType }}</span>
-              </div>
-
-              <div class="history-row">
-                <span class="label">Status</span>
-                <span class="value">{{ b.status }}</span>
-              </div>
-
-              <div class="history-row">
-                <span class="label">PNR Outbound</span>
-                <span class="value">{{ b.pnrOutbound || 'N/A' }}</span>
-              </div>
-
-              <div class="history-row" *ngIf="b.pnrReturn">
-                <span class="label">PNR Return</span>
-                <span class="value">{{ b.pnrReturn }}</span>
-              </div>
-
-              <ng-container *ngIf="flightInfo(b.outboundFlightId) as f">
-                <div class="history-row">
-                  <span class="label">Flight Number</span>
-                  <span class="value">{{ f.flightNumber || f.airlineCode || 'N/A' }}</span>
-                </div>
-                <div class="history-row">
-                  <span class="label">Route</span>
-                  <span class="value">{{ f.sourceCity || 'N/A' }} → {{ f.destinationCity || 'N/A' }}</span>
-                </div>
-                <div class="history-row">
-                  <span class="label">Departure</span>
-                  <span class="value">{{ f.departureDate || 'N/A' }} {{ f.departureTime || '' }}</span>
-                </div>
-                <div class="history-row">
-                  <span class="label">Arrival</span>
-                  <span class="value">{{ f.arrivalDate || 'N/A' }} {{ f.arrivalTime || '' }}</span>
-                </div>
-              </ng-container>
-
-              <div class="history-row" *ngIf="b.returnFlight">
-                <span class="label">Return Flight</span>
-                <span class="value">{{ b.returnFlight }}</span>
-              </div>
-
-              <ng-container *ngIf="b.returnFlight && flightInfo(b.returnFlight) as r">
-                <div class="history-row">
-                  <span class="label">Return Flight No.</span>
-                  <span class="value">{{ r.flightNumber || r.airlineCode || 'N/A' }}</span>
-                </div>
-                <div class="history-row">
-                  <span class="label">Return Route</span>
-                  <span class="value">{{ r.sourceCity || 'N/A' }} → {{ r.destinationCity || 'N/A' }}</span>
-                </div>
-                <div class="history-row">
-                  <span class="label">Return Departure</span>
-                  <span class="value">{{ r.departureDate || 'N/A' }} {{ r.departureTime || '' }}</span>
-                </div>
-                <div class="history-row">
-                  <span class="label">Return Arrival</span>
-                  <span class="value">{{ r.arrivalDate || 'N/A' }} {{ r.arrivalTime || '' }}</span>
-                </div>
-              </ng-container>
-
-              <div class="history-row">
-                <span class="label">Contact</span>
-                <span class="value">{{ b.contactName }} ({{ b.contactEmail }})</span>
-              </div>
-
-              <div class="history-row" *ngIf="passengerList(b.passengers).length">
-                <span class="label">Passenger Details</span>
-                <span class="value">
-                  <div class="passenger-list">
-                    <div class="passenger" *ngFor="let p of passengerList(b.passengers)">
-                      <div><strong>Name:</strong> {{ p.name || 'N/A' }}</div>
-                      <div><strong>Age:</strong> {{ p.age ?? 'N/A' }}</div>
-                      <div><strong>Gender:</strong> {{ p.gender || 'N/A' }}</div>
-                      <div *ngIf="p.seatOutbound || p.seatReturn">
-                        <strong>Seat:</strong> {{ p.seatOutbound || p.seatReturn }}
-                      </div>
-                    </div>
-                  </div>
-                </span>
-              </div>
-
-              <button class="search-btn" (click)="printTicket(b)">Print Ticket</button>
-
-              <button
-                class="auth-btn"
-                type="button"
-                *ngIf="b.status.toLowerCase() !== 'cancelled'"
-                (click)="attemptCancel(b)"
-                [disabled]="isCancelling(b)"
-                style="margin-left:8px">
-                <span *ngIf="!isCancelling(b)">Cancel Booking</span>
-                <span *ngIf="isCancelling(b)">Cancelling...</span>
-              </button>
-            </div>
-          </div>
+          <span
+            [style.background]="b.status==='CONFIRMED' ? '#e8f5e9' : '#ffebee'"
+            [style.color]="b.status==='CONFIRMED' ? '#2e7d32' : '#c62828'"
+            style="padding:4px 10px;border-radius:12px;font-size:12px">
+            {{ b.status }}
+          </span>
         </div>
-      </div>
 
-      <div *ngIf="!records.length && !pending && !error">
-        No history loaded yet.
+        <div *ngIf="flightInfo(b.outboundFlightId) as f"
+          style="margin:12px 0;font-weight:600">
+          {{ f.sourceCity }} → {{ f.destinationCity }}
+        </div>
+
+        <div style="font-size:14px;color:#444;line-height:1.6">
+          <div><strong>Trip:</strong> {{ b.tripType }}</div>
+          <div><strong>Passengers:</strong> {{ b.totalPassengers }}</div>
+          <div><strong>Contact:</strong> {{ b.contactName }}</div>
+          <div><strong>Email:</strong> {{ b.contactEmail }}</div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div style="display:flex;justify-content:space-between;margin-top:16px">
+          <button (click)="printTicket(b)"
+            style="background:#1976d2;color:#fff;border:none;
+                   padding:8px 14px;border-radius:8px;cursor:pointer">
+            Print Ticket
+          </button>
+
+          <button
+            *ngIf="b.status !== 'CANCELLED'"
+            (click)="attemptCancel(b)"
+            [disabled]="isCancelling(b)"
+            style="background:#d32f2f;color:#fff;border:none;
+                   padding:8px 14px;border-radius:8px;cursor:pointer">
+            {{ isCancelling(b) ? 'Cancelling...' : 'Cancel' }}
+          </button>
+        </div>
+
       </div>
     </div>
+
+    <div *ngIf="!filteredRecords.length && !pending">
+      No bookings found.
+    </div>
+
   </div>
 </main>
 
 <div *ngIf="cancelTarget"
-     style="position:fixed; inset:0; background:rgba(0,0,0,0.45);
-            display:flex; align-items:center; justify-content:center; z-index:1000">
+     style="position:fixed; inset:0;
+            background:rgba(15,23,42,0.45);
+            backdrop-filter:blur(4px);
+            display:flex; align-items:center; justify-content:center;
+            z-index:1200;">
 
-  <div style="background:#fff; padding:24px; border-radius:12px; width:90%; max-width:400px">
-    <h3>Cancel Booking</h3>
+  <div style="background:#ffffff;
+              border-radius:20px;
+              padding:28px;
+              width:90%;
+              max-width:420px;
+              box-shadow:0 25px 50px rgba(0,0,0,0.15);
+              animation:fadeInUp 0.3s ease;">
 
-    <p>
-      Are you sure you want to cancel this booking?
-      <br>
-      <strong>PNR:</strong> {{ cancelTarget.pnrOutbound || 'N/A' }}
+    <h3 style="margin-bottom:8px; font-size:22px; color:#1f2937;">
+      Cancel Booking
+    </h3>
+
+    <p style="color:#6b7280; font-size:14px; line-height:1.6;">
+      Are you sure you want to cancel this booking?<br />
+      <strong style="color:#1f2937;">
+        PNR:
+      </strong>
+      {{ cancelTarget.pnrOutbound || 'N/A' }}
     </p>
 
-    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px">
-      <button class="auth-btn" (click)="closeCancelModal()">No, Keep Booking</button>
+    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:22px;">
       <button
-        style="background:#d32f2f; color:#fff; border:none; padding:10px 14px;
-               border-radius:6px; cursor:pointer"
-        (click)="confirmCancel()">
-        Yes, Cancel
+        (click)="closeCancelModal()"
+        style="background:#f3f4f6;
+               color:#1f2937;
+               border:1px solid #e5e7eb;
+               padding:10px 18px;
+               border-radius:10px;
+               font-weight:600;
+               cursor:pointer;">
+        Keep Booking
+      </button>
+
+      <button
+        (click)="confirmCancel()"
+        style="background:linear-gradient(90deg,#ff6b35,#ff8c42);
+               color:#ffffff;
+               border:none;
+               padding:10px 18px;
+               border-radius:10px;
+               font-weight:600;
+               cursor:pointer;
+               box-shadow:0 8px 20px rgba(255,107,53,0.35);">
+        Cancel Booking
       </button>
     </div>
+
   </div>
 </div>
 
-<!-- Cancel flight (flight within 24 hours) -->
 <div *ngIf="cancelBlockedTarget"
-     style="position:fixed; inset:0; background:rgba(0,0,0,0.45);
-            display:flex; align-items:center; justify-content:center; z-index:1000">
+     style="position:fixed; inset:0;
+            background:rgba(15,23,42,0.45);
+            backdrop-filter:blur(4px);
+            display:flex; align-items:center; justify-content:center;
+            z-index:1200;">
 
-  <div style="background:#fafafa; padding:24px; border-radius:12px; width:90%; max-width:420px">
-    <h3>Cannot Cancel Booking</h3>
+  <div style="background:#ffffff;
+              border-radius:20px;
+              padding:28px;
+              width:90%;
+              max-width:420px;
+              box-shadow:0 25px 50px rgba(0,0,0,0.15);
+              border-left:5px solid #f59e0b;
+              animation:fadeInUp 0.3s ease;">
 
-    <p>
-      This flight departs within 24 hours and cannot be cancelled.
-      <br>
-      <strong>PNR:</strong> {{ cancelBlockedTarget.pnrOutbound || 'N/A' }}
+    <h3 style="margin-bottom:8px; font-size:22px; color:#b45309;">
+      Cannot Cancel Booking
+    </h3>
+
+    <p style="color:#6b7280; font-size:14px; line-height:1.6;">
+      This flight departs within 24 hours and cannot be cancelled.<br />
+      <strong style="color:#1f2937;">
+        PNR:
+      </strong>
+      {{ cancelBlockedTarget.pnrOutbound || 'N/A' }}
     </p>
 
-    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px">
-      <button class="auth-btn" (click)="closeCancelBlocked()">OK</button>
+    <div style="display:flex; justify-content:flex-end; margin-top:22px;">
+      <button
+        (click)="closeCancelBlocked()"
+        style="background:#f3f4f6;
+               color:#1f2937;
+               border:1px solid #e5e7eb;
+               padding:10px 18px;
+               border-radius:10px;
+               font-weight:600;
+               cursor:pointer;">
+        OK
+      </button>
     </div>
+
   </div>
 </div>
 
-<div
-  class="toast"
-  *ngIf="toastMessage"
-  [class.success]="toastType==='success'"
-  [class.error]="toastType==='error'">
+
+<!-- TOAST -->
+<div *ngIf="toastMessage"
+  [style.background]="toastType==='success' ? '#2e7d32' : '#c62828'"
+  style="position:fixed;bottom:20px;right:20px;color:#fff;
+         padding:12px 18px;border-radius:8px">
   {{ toastMessage }}
 </div>
