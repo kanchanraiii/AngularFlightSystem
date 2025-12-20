@@ -9,7 +9,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  template:'./register.html'
+  templateUrl:'./register.html'
 })
 export class RegisterComponent {
   password = '';
