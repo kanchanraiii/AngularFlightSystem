@@ -9,7 +9,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-history',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl:'./history.html' 
+  templateUrl: './history.html'
 })
 export class HistoryComponent implements OnInit {
   email = '';
@@ -22,6 +22,8 @@ export class HistoryComponent implements OnInit {
   toastMessage = '';
   toastType: '' | 'success' | 'error' = '';
   cancelling = new Set<string>();
+
+  cancelTarget: BookingRecord | null = null;
 
   constructor(
     public auth: AuthService,
@@ -39,13 +41,9 @@ export class HistoryComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (!this.auth.isAuthenticated()) {
-      console.warn('History: not authenticated');
-      return;
-    }
+    if (!this.auth.isAuthenticated()) return;
     if (!this.email) {
       this.error = 'No email found for this session. Please log in again.';
-      console.warn('History: missing email/username in session');
       return;
     }
     this.fetchHistory();
@@ -54,20 +52,15 @@ export class HistoryComponent implements OnInit {
 
   async fetchHistory() {
     if (!this.email) return;
-    console.info('History: fetching bookings for', this.email);
     this.pending = true;
     this.error = '';
     try {
       const data = await firstValueFrom(this.booking.getHistory(this.email));
       this.records = Array.isArray(data) ? data : [];
       this.expanded = null;
-      console.info('History: fetched', this.records.length, 'records', this.records);
-      this.cdr.detectChanges();
-    } catch (err: any) {
+    } catch {
       this.error = 'Failed to load history.';
       this.records = [];
-      this.expanded = null;
-      console.error('History: error fetching history', err);
     } finally {
       this.pending = false;
       this.cdr.detectChanges();
@@ -77,32 +70,20 @@ export class HistoryComponent implements OnInit {
   async fetchFlights() {
     try {
       const flights = await firstValueFrom(this.booking.getAllFlights());
-      console.info('History: fetched flights', flights?.length ?? 0);
       this.flightsById.clear();
       flights.forEach((f: any) => {
-        const ids = [f.flightId, f.id, f._id].filter(Boolean);
-        ids.forEach((id) => this.flightsById.set(id, f));
+        [f.flightId, f.id, f._id].filter(Boolean)
+          .forEach((id) => this.flightsById.set(id, f));
       });
-      this.cdr.detectChanges();
-    } catch (err) {
-      // fail silently; will fall back to IDs
-      console.warn('History: failed to fetch flights', err);
-    }
+    } catch {}
   }
 
   flightInfo(id: string | null | undefined) {
-    if (!id) return null;
-    return this.flightsById.get(id) || null;
+    return id ? this.flightsById.get(id) || null : null;
   }
 
   toggle(record: BookingRecord) {
     this.expanded = this.expanded === record ? null : record;
-  }
-
-  flightRoute(id: string | null | undefined) {
-    const f = this.flightInfo(id);
-    if (!f) return null;
-    return `${f.sourceCity ?? ''} → ${f.destinationCity ?? ''}`.trim();
   }
 
   passengerList(passengers: any): any[] {
@@ -131,42 +112,52 @@ export class HistoryComponent implements OnInit {
     }, 3000);
   }
 
+  openCancelModal(record: BookingRecord) {
+    this.cancelTarget = record;
+  }
+
+  closeCancelModal() {
+    this.cancelTarget = null;
+  }
+
+  confirmCancel() {
+    if (!this.cancelTarget) return;
+    this.cancelBooking(this.cancelTarget);
+    this.cancelTarget = null;
+  }
+
   async cancelBooking(record: BookingRecord) {
     const token = this.auth.getToken();
     if (!token) {
       this.showToast('Not authenticated', 'error');
       return;
     }
-    const pnr = (record.pnrOutbound || record.bookingId || '').toString();
-    if (!pnr) {
-      this.showToast('Missing PNR for this booking', 'error');
-      return;
-    }
-    const p = pnr.toUpperCase();
-    if (this.cancelling.has(p)) return;
-    this.cancelling.add(p);
+
+    const pnr = (record.pnrOutbound || record.bookingId || '').toUpperCase();
+    if (!pnr || this.cancelling.has(pnr)) return;
+
+    this.cancelling.add(pnr);
     this.cdr.detectChanges();
+
     try {
-      const res = await firstValueFrom(this.booking.cancelBooking(p, token));
-      const r: any = res;
-      if (r.status === 200 || r.status === 204) {
+      const res = await firstValueFrom(this.booking.cancelBooking(pnr, token));
+      if (res?.status === 200 || res?.status === 204) {
         record.status = 'Cancelled';
         this.showToast('Booking cancelled', 'success');
         this.fetchHistory();
       } else {
         this.showToast('Failed to cancel booking', 'error');
       }
-    } catch (err) {
+    } catch {
       this.showToast('Failed to cancel booking', 'error');
     } finally {
-      this.cancelling.delete(p);
+      this.cancelling.delete(pnr);
       this.cdr.detectChanges();
     }
   }
 
   isCancelling(record: BookingRecord) {
-    const pnr = (record.pnrOutbound || record.bookingId || '').toString().toUpperCase();
+    const pnr = (record.pnrOutbound || record.bookingId || '').toUpperCase();
     return !!pnr && this.cancelling.has(pnr);
   }
-  
 }
