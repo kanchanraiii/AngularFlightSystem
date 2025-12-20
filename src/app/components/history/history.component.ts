@@ -112,6 +112,7 @@ export class HistoryComponent implements OnInit {
     }, 3000);
   }
 
+ 
   openCancelModal(record: BookingRecord) {
     this.cancelTarget = record;
   }
@@ -120,10 +121,65 @@ export class HistoryComponent implements OnInit {
     this.cancelTarget = null;
   }
 
+ 
+  cancelBlockedTarget: BookingRecord | null = null;
+
+  closeCancelBlocked() {
+    this.cancelBlockedTarget = null;
+  }
+
+ 
+  attemptCancel(record: BookingRecord) {
+    if (this.isWithin24HoursForFlight(record)) {
+      this.cancelBlockedTarget = record;
+      this.cdr.detectChanges();
+      return;
+    }
+    this.openCancelModal(record);
+  }
+
   confirmCancel() {
     if (!this.cancelTarget) return;
     this.cancelBooking(this.cancelTarget);
     this.cancelTarget = null;
+  }
+
+  
+  getFlightDeparture(record: BookingRecord, which: 'outbound' | 'return' = 'outbound'): Date | null {
+    const flightId = which === 'outbound' ? record.outboundFlightId : (record.returnFlight as string | null);
+    const f = flightId ? this.flightInfo(flightId) : null;
+    if (!f) return null;
+    const dateStr = f.departureDate;
+    const timeStr = f.departureTime;
+    if (!dateStr) return null;
+
+   
+    let iso = dateStr;
+    if (timeStr) {
+      const t = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
+      iso = `${dateStr}T${t}`;
+    } else {
+      iso = `${dateStr}T00:00:00`;
+    }
+
+    const d = new Date(iso);
+    if (!isNaN(d.getTime())) return d;
+
+    const parsed = Date.parse(`${dateStr} ${timeStr || ''}`);
+    return isNaN(parsed) ? null : new Date(parsed);
+  }
+
+  isWithin24HoursForFlight(record: BookingRecord): boolean {
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+
+    const out = this.getFlightDeparture(record, 'outbound');
+    if (out && (out.getTime() - now) <= dayMs) return true;
+
+    const ret = this.getFlightDeparture(record, 'return');
+    if (ret && (ret.getTime() - now) <= dayMs) return true;
+
+    return false;
   }
 
   async cancelBooking(record: BookingRecord) {

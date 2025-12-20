@@ -80,14 +80,17 @@ export class BookingComponent implements OnInit {
       { observe: 'response' }
     ).subscribe({
       next: (res: HttpResponse<any>) => {
-        if (res.status === 201) {
-          this.bookingResponse = res.body;
+        console.log('Booking response status:', res.status, 'body:', res.body);
+        this.message = 'Booking status: ' + res.status;
+        if (res.status >= 200 && res.status < 300) {
+          this.bookingResponse = res.body || {};
           this.bookingSuccess = true;
         } else {
-          this.message = 'Unexpected response from server';
+          this.message = 'Unexpected response from server: ' + res.status;
         }
       },
-      error: () => {
+      error: (err) => {
+        console.error('Booking error', err);
         this.message = 'Booking failed';
       }
     });

@@ -96,15 +96,14 @@
     <h2>Thank You! Booking Confirmed</h2>
 
     <div class="confirm-grid">
-      <p><strong>Status:</strong> {{ bookingResponse.status }}</p>
-      <p><strong>Booking ID:</strong> {{ bookingResponse.bookingId }}</p>
-      <p><strong>Trip Type:</strong> {{ bookingResponse.tripType }}</p>
-      <p><strong>Flight ID:</strong> {{ bookingResponse.outboundFlightId }}</p>
-      <p><strong>PNR:</strong> {{ bookingResponse.pnrOutbound }}</p>
-      <p><strong>Total Passengers:</strong> {{ bookingResponse.totalPassengers }}</p>
-      <p><strong>Contact Name:</strong> {{ bookingResponse.contactName }}</p>
-      <p><strong>Contact Email:</strong> {{ bookingResponse.contactEmail }}</p>
+      <p><strong>Status:</strong> {{ bookingResponse?.status }}</p>
+      <p><strong>Booking ID:</strong> {{ bookingResponse?.bookingId }}</p>
+      <p><strong>Trip Type:</strong> {{ bookingResponse?.tripType }}</p>
+      <p><strong>Flight ID:</strong> {{ bookingResponse?.outboundFlightId }}</p>
+      <p><strong>PNR:</strong> {{ bookingResponse?.pnrOutbound }}</p>
+      <p><strong>Total Passengers:</strong> {{ bookingResponse?.totalPassengers }}</p>
+      <p><strong>Contact Name:</strong> {{ bookingResponse?.contactName }}</p>
+      <p><strong>Contact Email:</strong> {{ bookingResponse?.contactEmail }}</p>
     </div>
   </div>
-
 </div>
