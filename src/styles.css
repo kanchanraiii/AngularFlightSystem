@@ -194,6 +194,13 @@ body {
   outline-offset: 2px;
 }
 
+.auth-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .login-btn {
   position: relative;
   overflow: hidden;
@@ -817,6 +824,27 @@ body {
   background: #fff;
   text-align: left;
   cursor: pointer;
+}
+
+.history-detail .search-btn,
+.history-detail .auth-btn {
+  display: inline-flex;
+  width: auto;
+  padding: 10px 14px;
+  margin-top: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.history-detail .search-btn {
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  color: #fff;
+}
+
+.history-detail .auth-btn {
+  background: #ef4444;
+  color: white;
+  margin-left: 8px;
 }
 
 .history-row {

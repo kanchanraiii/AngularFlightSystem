@@ -22,7 +22,7 @@ export type BookingRecord = {
   providedIn: 'root'
 })
 export class BookingService {
-  private readonly apiBase = window.location.port === '4200' ? '' : 'http://localhost:9000';
+  private readonly apiBase = window.location.port === '9000' ? '' : 'http://localhost:9000';
   private readonly baseUrl = `${this.apiBase}/booking/api/booking`;
   private readonly flightBaseUrl = `${this.apiBase}/flight/api/flight`;
   private readonly bookingBaseUrl=`${this.apiBase}/booking/api/booking`;

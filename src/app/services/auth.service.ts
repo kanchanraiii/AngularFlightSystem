@@ -27,7 +27,7 @@ type UserSession = {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiBase = window.location.port === '4200' ? '' : 'http://localhost:9000';
+  private readonly apiBase = window.location.port === '9000' ? '' : 'http://localhost:9000';
   private readonly baseUrl = `${this.apiBase}/auth`;
   private readonly tokenKey = 'auth_token';
   private readonly usernameKey = 'auth_username';

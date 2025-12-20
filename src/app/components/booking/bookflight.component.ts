@@ -21,6 +21,7 @@ export class BookingComponent implements OnInit {
   contactName = '';
   contactEmail = '';
   message = '';
+  
 
   passengers = [
     { name: '', age: null as number | null, gender: '', seatOutbound: '' }
@@ -34,7 +35,7 @@ export class BookingComponent implements OnInit {
     private http: HttpClient,
     private route: ActivatedRoute,
     public auth: AuthService,     
-    private router: Router        
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -55,6 +56,7 @@ export class BookingComponent implements OnInit {
   }
 
   logout() {
+    if (!confirm('Do you really want to log out?')) return;
     this.auth.logout();
     this.router.navigate(['/login']);
   }

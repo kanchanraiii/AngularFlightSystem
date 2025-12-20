@@ -21,6 +21,7 @@ export class HistoryComponent implements OnInit {
   printTarget: BookingRecord | null = null;
   toastMessage = '';
   toastType: '' | 'success' | 'error' = '';
+  cancelling = new Set<string>();
 
   constructor(
     public auth: AuthService,
@@ -32,6 +33,7 @@ export class HistoryComponent implements OnInit {
   }
 
   logout() {
+    if (!confirm('Do you really want to log out?')) return;
     this.auth.logout();
     this.router.navigate(['/login']);
   }
@@ -140,9 +142,12 @@ export class HistoryComponent implements OnInit {
       this.showToast('Missing PNR for this booking', 'error');
       return;
     }
-    this.pending = true;
+    const p = pnr.toUpperCase();
+    if (this.cancelling.has(p)) return;
+    this.cancelling.add(p);
+    this.cdr.detectChanges();
     try {
-      const res = await firstValueFrom(this.booking.cancelBooking(pnr.toUpperCase(), token));
+      const res = await firstValueFrom(this.booking.cancelBooking(p, token));
       const r: any = res;
       if (r.status === 200 || r.status === 204) {
         record.status = 'Cancelled';
@@ -154,8 +159,14 @@ export class HistoryComponent implements OnInit {
     } catch (err) {
       this.showToast('Failed to cancel booking', 'error');
     } finally {
-      this.pending = false;
+      this.cancelling.delete(p);
       this.cdr.detectChanges();
     }
   }
+
+  isCancelling(record: BookingRecord) {
+    const pnr = (record.pnrOutbound || record.bookingId || '').toString().toUpperCase();
+    return !!pnr && this.cancelling.has(pnr);
+  }
+  
 }

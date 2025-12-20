@@ -25,6 +25,7 @@ export class RegisterComponent {
   toastType: 'success' | 'error' | '' = '';
   toastVisible = false;
   private toastTimeout: any;
+  
 
   constructor(public auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -70,6 +71,7 @@ export class RegisterComponent {
   }
 
   logout() {
+    if (!confirm('Do you really want to log out?')) return;
     this.auth.logout();
     this.router.navigate(['/login']);
   }

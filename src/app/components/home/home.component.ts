@@ -30,6 +30,7 @@ export class HomeComponent implements OnInit {
   toastType: 'success' | 'error' | '' = '';
   toastVisible = false;
   private toastTimeout: any;
+  
   airlineMap: Record<string, string> = {};
   readonly destinations = [
     'Kanpur',
@@ -107,6 +108,7 @@ export class HomeComponent implements OnInit {
   }
 
   logout() {
+    if (!confirm('Do you really want to log out?')) return;
     this.auth.logout();
     this.router.navigate(['/login']);
   }

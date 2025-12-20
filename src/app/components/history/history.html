@@ -134,7 +134,16 @@
                     </span>
                   </div>
                   <button class="search-btn" type="button" (click)="printTicket(b)">Print Ticket</button>
-                  <button class="auth-btn" type="button" *ngIf="b.status.toLowerCase() !== 'cancelled'" (click)="cancelBooking(b)" style="margin-left:8px">Cancel Booking</button>
+                  <button
+                    class="auth-btn"
+                    type="button"
+                    *ngIf="b.status.toLowerCase() !== 'cancelled'"
+                    (click)="cancelBooking(b)"
+                    [disabled]="isCancelling(b)"
+                    style="margin-left:8px">
+                    <span *ngIf="!isCancelling(b)">Cancel Booking</span>
+                    <span *ngIf="isCancelling(b)">Cancelling...</span>
+                  </button>
                 </div>
               </div>
             </div>
