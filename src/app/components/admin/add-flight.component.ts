@@ -5,40 +5,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <h3>Add Flight</h3>
-
-    <form (ngSubmit)="submit()">
-      <input
-        type="text"
-        name="flightNumber"
-        [(ngModel)]="flightNumber"
-        placeholder="Flight Number"
-        required
-      />
-      <br /><br />
-
-      <input
-        type="text"
-        name="source"
-        [(ngModel)]="source"
-        placeholder="Source"
-        required
-      />
-      <br /><br />
-
-      <input
-        type="text"
-        name="destination"
-        [(ngModel)]="destination"
-        placeholder="Destination"
-        required
-      />
-      <br /><br />
-
-      <button type="submit">Add Flight</button>
-    </form>
-  `
+  templateUrl:'./add-flight.html'
 })
 export class AddFlightComponent {
   flightNumber = '';

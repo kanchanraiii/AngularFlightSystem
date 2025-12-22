@@ -1,23 +1,43 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { RouterModule, Router } from '@angular/router';
+import {FlightAdminService,Flight} from '../../services/flight-admin.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   standalone: true,
   selector: 'app-admin-dashboard',
-  imports: [RouterModule],
-  template: `
-    <h2>Admin Dashboard</h2>
-
-    <div style="margin-top: 16px">
-      <button routerLink="add-airline">Add Airline</button>
-      <button routerLink="add-flight" style="margin-left: 10px">
-        Add Flight
-      </button>
-    </div>
-
-    <hr style="margin: 20px 0" />
-
-    <router-outlet></router-outlet>
-  `
+  templateUrl: './admin-dashboard.html',
+   imports: [RouterModule, CommonModule]
 })
-export class AdminDashboardComponent {}
+export class AdminDashboardComponent {
+  flights:Flight[]=[];
+  loading=false;
+  error='';
+  constructor(private auth: AuthService,private router: Router,private flightService:FlightAdminService) {
+  }
+
+  ngOnInit():void{
+    this.loadFlights();
+  }
+
+  loadFlights(){
+    this.loading = true;
+    this.error = '';
+    this.flightService.getAllFlights().subscribe({
+      next: (data) => {
+        this.flights = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load flights';
+        this.loading = false;
+      }
+    });
+  }
+
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+}

@@ -5,21 +5,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <h3>Add Airline</h3>
-
-    <form (ngSubmit)="submit()">
-      <input
-        type="text"
-        name="name"
-        [(ngModel)]="name"
-        placeholder="Airline Name"
-        required
-      />
-      <br /><br />
-      <button type="submit">Add Airline</button>
-    </form>
-  `
+  templateUrl:'./add-airline.html' 
 })
 export class AddAirlineComponent {
   name = '';
