@@ -7,6 +7,7 @@ import { authGuard } from './auth/auth.guard';
 import { BookingComponent } from './components/booking/bookflight.component';
 import { adminGuard } from './auth/admin.guard';
 import { AdminLoginComponent } from './components/auth/admin-login.component';
+import { ChangePasswordComponent } from './components/auth/change-password.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'history', component: HistoryComponent, canActivate: [authGuard] },
   { path: 'book-flight', component: BookingComponent, canActivate: [authGuard] },
+  { path: 'change-password', component: ChangePasswordComponent, canActivate: [authGuard] },
   {
     path: 'admin',
     canActivate: [adminGuard],

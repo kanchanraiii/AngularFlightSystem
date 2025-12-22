@@ -13,6 +13,7 @@
       <div class="nav-actions">
         <ng-container *ngIf="auth.isAuthenticated(); else guestActions">
           <button class="login" routerLink="/history">User History</button>
+          <button class="login" *ngIf="!auth.isAdmin()" routerLink="/change-password">Change Password</button>
           <button *ngIf="auth.isAdmin()" routerLink="/admin">Admin Panel</button>
           <button class="signup" (click)="logout()">Logout</button>
         </ng-container>
