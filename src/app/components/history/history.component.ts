@@ -12,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: './history.html'
 })
 export class HistoryComponent implements OnInit {
+
   email = '';
   pending = false;
   error = '';
@@ -19,24 +20,16 @@ export class HistoryComponent implements OnInit {
   expanded: BookingRecord | null = null;
   flightsById = new Map<string, any>();
   printTarget: BookingRecord | null = null;
+
   toastMessage = '';
   toastType: '' | 'success' | 'error' = '';
   cancelling = new Set<string>();
 
   cancelTarget: BookingRecord | null = null;
-filter: 'ALL' | 'CONFIRMED' | 'CANCELLED' = 'ALL';
+  cancelBlockedTarget: BookingRecord | null = null;
 
-get filteredRecords(): BookingRecord[] {
-  if (this.filter === 'ALL') return this.records;
-
-  return this.records.filter(r =>
-    r.status?.toUpperCase() === this.filter
-  );
-}
-
-setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
-  this.filter = value;
-}
+  // ✅ FIXED FILTER TYPE
+  filter: 'ALL' | 'CONFIRMED' | 'CANCELLED' | 'DEPARTED' = 'ALL';
 
   constructor(
     public auth: AuthService,
@@ -47,26 +40,50 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
     this.email = this.auth.getEmail() || this.auth.getUsername() || '';
   }
 
+  /* ================= FILTERING ================= */
+
+  get filteredRecords(): BookingRecord[] {
+    if (this.filter === 'ALL') return this.records;
+
+    return this.records.filter(r =>
+      (r.status || '').toUpperCase() === this.filter
+    );
+  }
+
+  setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED' | 'DEPARTED') {
+    this.filter = value;
+  }
+
+  /* ================= AUTH ================= */
+
   logout() {
     if (!confirm('Do you really want to log out?')) return;
     this.auth.logout();
     this.router.navigate(['/login']);
   }
 
+  /* ================= INIT ================= */
+
   ngOnInit() {
     if (!this.auth.isAuthenticated()) return;
+
     if (!this.email) {
       this.error = 'No email found for this session. Please log in again.';
       return;
     }
+
     this.fetchHistory();
     this.fetchFlights();
   }
 
+  /* ================= DATA ================= */
+
   async fetchHistory() {
     if (!this.email) return;
+
     this.pending = true;
     this.error = '';
+
     try {
       const data = await firstValueFrom(this.booking.getHistory(this.email));
       this.records = Array.isArray(data) ? data : [];
@@ -84,8 +101,10 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
     try {
       const flights = await firstValueFrom(this.booking.getAllFlights());
       this.flightsById.clear();
+
       flights.forEach((f: any) => {
-        [f.flightId, f.id, f._id].filter(Boolean)
+        [f.flightId, f.id, f._id]
+          .filter(Boolean)
           .forEach((id) => this.flightsById.set(id, f));
       });
     } catch {}
@@ -94,6 +113,8 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
   flightInfo(id: string | null | undefined) {
     return id ? this.flightsById.get(id) || null : null;
   }
+
+  /* ================= UI ACTIONS ================= */
 
   toggle(record: BookingRecord) {
     this.expanded = this.expanded === record ? null : record;
@@ -107,6 +128,7 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
     this.printTarget = record;
     this.expanded = record;
     this.cdr.detectChanges();
+
     setTimeout(() => {
       window.print();
       this.printTarget = null;
@@ -118,6 +140,7 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
     this.toastMessage = message;
     this.toastType = type;
     this.cdr.detectChanges();
+
     setTimeout(() => {
       this.toastMessage = '';
       this.toastType = '';
@@ -125,7 +148,8 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
     }, 3000);
   }
 
- 
+  /* ================= CANCELLATION ================= */
+
   openCancelModal(record: BookingRecord) {
     this.cancelTarget = record;
   }
@@ -134,14 +158,10 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
     this.cancelTarget = null;
   }
 
- 
-  cancelBlockedTarget: BookingRecord | null = null;
-
   closeCancelBlocked() {
     this.cancelBlockedTarget = null;
   }
 
- 
   attemptCancel(record: BookingRecord) {
     if (this.isWithin24HoursForFlight(record)) {
       this.cancelBlockedTarget = record;
@@ -157,29 +177,32 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
     this.cancelTarget = null;
   }
 
-  
-  getFlightDeparture(record: BookingRecord, which: 'outbound' | 'return' = 'outbound'): Date | null {
-    const flightId = which === 'outbound' ? record.outboundFlightId : (record.returnFlight as string | null);
+  /* ================= DATE CHECK ================= */
+
+  getFlightDeparture(
+    record: BookingRecord,
+    which: 'outbound' | 'return' = 'outbound'
+  ): Date | null {
+
+    const flightId =
+      which === 'outbound'
+        ? record.outboundFlightId
+        : (record.returnFlight as string | null);
+
     const f = flightId ? this.flightInfo(flightId) : null;
     if (!f) return null;
+
     const dateStr = f.departureDate;
     const timeStr = f.departureTime;
+
     if (!dateStr) return null;
 
-   
-    let iso = dateStr;
-    if (timeStr) {
-      const t = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
-      iso = `${dateStr}T${t}`;
-    } else {
-      iso = `${dateStr}T00:00:00`;
-    }
+    const iso = timeStr
+      ? `${dateStr}T${timeStr.length === 5 ? timeStr + ':00' : timeStr}`
+      : `${dateStr}T00:00:00`;
 
     const d = new Date(iso);
-    if (!isNaN(d.getTime())) return d;
-
-    const parsed = Date.parse(`${dateStr} ${timeStr || ''}`);
-    return isNaN(parsed) ? null : new Date(parsed);
+    return isNaN(d.getTime()) ? null : d;
   }
 
   isWithin24HoursForFlight(record: BookingRecord): boolean {
@@ -194,6 +217,8 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
 
     return false;
   }
+
+  /* ================= API ================= */
 
   async cancelBooking(record: BookingRecord) {
     const token = this.auth.getToken();
@@ -210,8 +235,9 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
 
     try {
       const res = await firstValueFrom(this.booking.cancelBooking(pnr, token));
+
       if (res?.status === 200 || res?.status === 204) {
-        record.status = 'Cancelled';
+        record.status = 'CANCELLED';
         this.showToast('Booking cancelled', 'success');
         this.fetchHistory();
       } else {
@@ -229,4 +255,15 @@ setFilter(value: 'ALL' | 'CONFIRMED' | 'CANCELLED') {
     const pnr = (record.pnrOutbound || record.bookingId || '').toUpperCase();
     return !!pnr && this.cancelling.has(pnr);
   }
+
+  canShowCancel(record: BookingRecord): boolean {
+  if (record.status?.toUpperCase() !== 'CONFIRMED') return false;
+  const now = Date.now();
+  const outbound = this.getFlightDeparture(record, 'outbound');
+  if (!outbound) return false;
+  if (outbound.getTime() <= now) return false;
+  if (this.isWithin24HoursForFlight(record)) return false;
+  return true;
+}
+
 }

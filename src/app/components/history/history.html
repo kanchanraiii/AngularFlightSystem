@@ -1,202 +1,219 @@
 <nav class="navbar">
   <a routerLink="/" class="logo">Flight Booking Sys</a>
   <div class="nav-actions">
-    <button class="signup" *ngIf="auth.isAuthenticated()" (click)="logout()">Logout</button>
-    <ng-container *ngIf="!auth.isAuthenticated()">
-      <button class="login" routerLink="/login">Login</button>
-      <button class="signup" routerLink="/register">Sign Up</button>
-    </ng-container>
+    <button class="signup" (click)="logout()">Logout</button>
   </div>
 </nav>
 
 <main class="main">
-  <div class="search-card" style="max-width:1100px;width:100%;">
-
-    <h1 class="card-heading">User History</h1>
-
-    <div style="display:flex; gap:12px; margin:16px 0;">
-      <button (click)="setFilter('ALL')" style="padding:8px 16px;border-radius:20px"
-        [style.background]="filter==='ALL' ? '#1976d2' : '#fff'"
-        [style.color]="filter==='ALL' ? '#fff' : '#000'">All</button>
-
-      <button (click)="setFilter('CONFIRMED')" style="padding:8px 16px;border-radius:20px"
-        [style.background]="filter==='CONFIRMED' ? '#2e7d32' : '#fff'"
-        [style.color]="filter==='CONFIRMED' ? '#fff' : '#000'">Confirmed</button>
-
-      <button (click)="setFilter('CANCELLED')" style="padding:8px 16px;border-radius:20px"
-        [style.background]="filter==='CANCELLED' ? '#c62828' : '#fff'"
-        [style.color]="filter==='CANCELLED' ? '#fff' : '#000'">Cancelled</button>
+  <div class="search-card" style="max-width: 1100px; width: 100%">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      "
+    >
+      <div>
+        <h1 class="card-heading" style="margin-bottom: 4px">User History</h1>
+        <p style="color: var(--muted); font-size: 14px">
+          {{ auth.getUsername() }} · {{ auth.getEmail() }}
+        </p>
+      </div>
     </div>
 
-    <div *ngIf="pending">Loading...</div>
-    <div *ngIf="error" style="color:red">{{ error }}</div>
+    <div style="display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap">
+      <button class="ghost-btn" [class.active]="filter === 'ALL'" (click)="setFilter('ALL')">
+        All
+      </button>
 
-    <div *ngIf="filteredRecords.length"
-      style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px">
+      <button
+        class="ghost-btn"
+        [class.active]="filter === 'CONFIRMED'"
+        (click)="setFilter('CONFIRMED')"
+      >
+        Confirmed
+      </button>
 
-      <div *ngFor="let b of filteredRecords"
-        style="background:#fff;border-radius:14px;padding:16px;
-               box-shadow:0 8px 20px rgba(0,0,0,0.06);
-               display:flex;flex-direction:column;justify-content:space-between">
+      <button
+        class="ghost-btn"
+        [class.active]="filter === 'CANCELLED'"
+        (click)="setFilter('CANCELLED')"
+      >
+        Cancelled
+      </button>
+    </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center">
+    <div *ngIf="pending" class="muted">Loading...</div>
+    <div *ngIf="error" style="color: #dc2626">{{ error }}</div>
+    <div
+      *ngIf="filteredRecords.length"
+      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px"
+    >
+      <div
+        *ngFor="let b of filteredRecords"
+        style="
+          background: #fff;
+          border-radius: 18px;
+          padding: 18px;
+          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        "
+      >
+        <div style="display: flex; justify-content: space-between; align-items: center">
           <strong>PNR: {{ b.pnrOutbound || 'N/A' }}</strong>
 
           <span
-            [style.background]="b.status==='CONFIRMED' ? '#e8f5e9' : '#ffebee'"
-            [style.color]="b.status==='CONFIRMED' ? '#2e7d32' : '#c62828'"
-            style="padding:4px 10px;border-radius:12px;font-size:12px">
+            style="padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600"
+            [style.background]="
+              b.status === 'CONFIRMED'
+                ? '#dcfce7'
+                : b.status === 'CANCELLED'
+                ? '#fee2e2'
+                : '#f3f4f6'
+            "
+            [style.color]="
+              b.status === 'CONFIRMED'
+                ? '#166534'
+                : b.status === 'CANCELLED'
+                ? '#991b1b'
+                : '#374151'
+            "
+          >
             {{ b.status }}
           </span>
         </div>
 
-        <div *ngIf="flightInfo(b.outboundFlightId) as f"
-          style="margin:12px 0;font-weight:600">
+        <div
+          *ngIf="flightInfo(b.outboundFlightId) as f"
+          style="margin: 14px 0 6px; font-weight: 700; font-size: 16px"
+        >
           {{ f.sourceCity }} → {{ f.destinationCity }}
         </div>
 
-        <div style="font-size:14px;color:#444;line-height:1.6">
-          <div><strong>Trip:</strong> {{ b.tripType }}</div>
-          <div><strong>Passengers:</strong> {{ b.totalPassengers }}</div>
-          <div><strong>Contact:</strong> {{ b.contactName }}</div>
-          <div><strong>Email:</strong> {{ b.contactEmail }}</div>
+        <div
+          *ngIf="flightInfo(b.outboundFlightId) as f"
+          style="font-size: 13px; color: var(--muted); margin-bottom: 10px"
+        >
+          {{ f.departureDate | date : 'dd MMM yyyy' }}
+          ·
+          {{ f.departureTime }}
         </div>
 
-        <!-- ACTIONS -->
-        <div style="display:flex;justify-content:space-between;margin-top:16px">
-          <button (click)="printTicket(b)"
-            style="background:#1976d2;color:#fff;border:none;
-                   padding:8px 14px;border-radius:8px;cursor:pointer">
+        <div style="font-size: 14px; color: #374151; line-height: 1.6">
+          <div><strong>Trip:</strong> {{ b.tripType }}</div>
+          <div><strong>Passengers:</strong> {{ b.totalPassengers }}</div>
+          <div><strong>Name:</strong> {{ b.contactName }}</div>
+          <div><strong>Email:</strong> {{ b.contactEmail }}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 18px; gap: 10px">
+          <button
+            (click)="printTicket(b)"
+            style="
+              background: linear-gradient(90deg, #ff6b35, #ff8c42);
+              color: #fff;
+              border: none;
+              padding: 8px 14px;
+              border-radius: 10px;
+              font-weight: 600;
+              cursor: pointer;
+            "
+          >
             Print Ticket
           </button>
 
           <button
-            *ngIf="b.status !== 'CANCELLED'"
+            *ngIf="canShowCancel(b)"
             (click)="attemptCancel(b)"
             [disabled]="isCancelling(b)"
-            style="background:#d32f2f;color:#fff;border:none;
-                   padding:8px 14px;border-radius:8px;cursor:pointer">
+            style="
+              background: #dc2626;
+              color: #fff;
+              border: none;
+              padding: 8px 14px;
+              border-radius: 10px;
+              font-weight: 600;
+              cursor: pointer;
+            "
+          >
             {{ isCancelling(b) ? 'Cancelling...' : 'Cancel' }}
           </button>
         </div>
-
       </div>
     </div>
 
-    <div *ngIf="!filteredRecords.length && !pending">
-      No bookings found.
-    </div>
-
+    <div *ngIf="!filteredRecords.length && !pending" class="empty-state">No bookings found.</div>
   </div>
 </main>
 
-<div *ngIf="cancelTarget"
-     style="position:fixed; inset:0;
-            background:rgba(15,23,42,0.45);
-            backdrop-filter:blur(4px);
-            display:flex; align-items:center; justify-content:center;
-            z-index:1200;">
 
-  <div style="background:#ffffff;
-              border-radius:20px;
-              padding:28px;
-              width:90%;
-              max-width:420px;
-              box-shadow:0 25px 50px rgba(0,0,0,0.15);
-              animation:fadeInUp 0.3s ease;">
+<div
+  *ngIf="cancelTarget"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+    pointer-events: auto;
+  "
+>
+  <div
+    style="
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    "
+  >
+    <h3>Cancel Booking?</h3>
+    <p class="muted">Are you sure you want to cancel this booking?</p>
 
-    <h3 style="margin-bottom:8px; font-size:22px; color:#1f2937;">
-      Cancel Booking
-    </h3>
-
-    <p style="color:#6b7280; font-size:14px; line-height:1.6;">
-      Are you sure you want to cancel this booking?<br />
-      <strong style="color:#1f2937;">
-        PNR:
-      </strong>
-      {{ cancelTarget.pnrOutbound || 'N/A' }}
-    </p>
-
-    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:22px;">
-      <button
-        (click)="closeCancelModal()"
-        style="background:#f3f4f6;
-               color:#1f2937;
-               border:1px solid #e5e7eb;
-               padding:10px 18px;
-               border-radius:10px;
-               font-weight:600;
-               cursor:pointer;">
-        Keep Booking
-      </button>
-
-      <button
-        (click)="confirmCancel()"
-        style="background:linear-gradient(90deg,#ff6b35,#ff8c42);
-               color:#ffffff;
-               border:none;
-               padding:10px 18px;
-               border-radius:10px;
-               font-weight:600;
-               cursor:pointer;
-               box-shadow:0 8px 20px rgba(255,107,53,0.35);">
-        Cancel Booking
+    <div style="display: flex; gap: 12px; margin-top: 18px">
+      <button class="ghost-btn full" (click)="closeCancelModal()">No</button>
+      <button class="auth-btn" style="background: #dc2626" (click)="confirmCancel()">
+        Yes, Cancel
       </button>
     </div>
-
-  </div>
-</div>
-
-<div *ngIf="cancelBlockedTarget"
-     style="position:fixed; inset:0;
-            background:rgba(15,23,42,0.45);
-            backdrop-filter:blur(4px);
-            display:flex; align-items:center; justify-content:center;
-            z-index:1200;">
-
-  <div style="background:#ffffff;
-              border-radius:20px;
-              padding:28px;
-              width:90%;
-              max-width:420px;
-              box-shadow:0 25px 50px rgba(0,0,0,0.15);
-              border-left:5px solid #f59e0b;
-              animation:fadeInUp 0.3s ease;">
-
-    <h3 style="margin-bottom:8px; font-size:22px; color:#b45309;">
-      Cannot Cancel Booking
-    </h3>
-
-    <p style="color:#6b7280; font-size:14px; line-height:1.6;">
-      This flight departs within 24 hours and cannot be cancelled.<br />
-      <strong style="color:#1f2937;">
-        PNR:
-      </strong>
-      {{ cancelBlockedTarget.pnrOutbound || 'N/A' }}
-    </p>
-
-    <div style="display:flex; justify-content:flex-end; margin-top:22px;">
-      <button
-        (click)="closeCancelBlocked()"
-        style="background:#f3f4f6;
-               color:#1f2937;
-               border:1px solid #e5e7eb;
-               padding:10px 18px;
-               border-radius:10px;
-               font-weight:600;
-               cursor:pointer;">
-        OK
-      </button>
-    </div>
-
   </div>
 </div>
 
 
-<!-- TOAST -->
-<div *ngIf="toastMessage"
-  [style.background]="toastType==='success' ? '#2e7d32' : '#c62828'"
-  style="position:fixed;bottom:20px;right:20px;color:#fff;
-         padding:12px 18px;border-radius:8px">
-  {{ toastMessage }}
+<div
+  *ngIf="cancelBlockedTarget"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+    pointer-events: auto;
+  "
+>
+  <div
+    style="
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    "
+  >
+    <h3 style="color: #dc2626">Cancellation Not Allowed</h3>
+    <p class="muted">You cannot cancel a flight within <strong>24 hours</strong> of departure.</p>
+
+    <button class="auth-btn" style="margin-top: 16px" (click)="closeCancelBlocked()">Okay</button>
+  </div>
 </div>
