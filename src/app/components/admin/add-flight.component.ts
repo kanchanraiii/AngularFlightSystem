@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FlightAdminService } from '../../services/flight-admin.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -146,34 +147,38 @@ export class AddFlightComponent implements OnInit {
       mealAvailable: this.flight.mealAvailable
     };
 
-    this.service.addFlight(payload).subscribe({
-      next: (res) => {
-        if (res?.error) {
-          this.errorMsg = res.error;
+    this.service
+      .addFlight(payload)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (res) => {
+          if (res?.error) {
+            this.errorMsg = res.error;
+            this.successMsg = '';
+          } else {
+            this.successMsg = 'Flight added successfully';
+            this.errorMsg = '';
+
+            // update cache so duplicate works immediately
+            this.existingFlightNumbers.push(payload.flightNumber);
+
+            this.resetForm();
+          }
+
+          setTimeout(() => {
+            this.successMsg = '';
+            this.errorMsg = '';
+          }, 2500);
+        },
+        error: (err) => {
           this.successMsg = '';
-        } else {
-          this.successMsg = 'Flight added successfully';
-          this.errorMsg = '';
+          this.errorMsg = err?.error?.error || 'Failed to add flight';
 
-          // update cache so duplicate works immediately
-          this.existingFlightNumbers.push(payload.flightNumber);
-
-          this.resetForm();
+          setTimeout(() => {
+            this.errorMsg = '';
+          }, 2500);
         }
-
-        this.loading = false;
-
-        setTimeout(() => {
-          this.successMsg = '';
-          this.errorMsg = '';
-        }, 2500);
-      },
-      error: (err) => {
-        this.loading = false;
-        this.successMsg = '';
-        this.errorMsg = err?.error?.error || 'Failed to add flight';
-      }
-    });
+      });
   }
 
   resetForm() {

@@ -6,11 +6,13 @@ import { HistoryComponent } from './components/history/history.component';
 import { authGuard } from './auth/auth.guard';
 import { BookingComponent } from './components/booking/bookflight.component';
 import { adminGuard } from './auth/admin.guard';
+import { AdminLoginComponent } from './components/auth/admin-login.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'admin-login', component: AdminLoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'history', component: HistoryComponent, canActivate: [authGuard] },
   { path: 'book-flight', component: BookingComponent, canActivate: [authGuard] },

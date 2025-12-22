@@ -20,3 +20,17 @@
 .toast-btn.no {
   background: #e5e7eb;
 }
+
+.admin-shell {
+  align-items: stretch;
+}
+
+.admin-hero {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  min-height: 500px;
+}
+
+.hero-overlay--admin {
+  justify-content: center;
+  gap: 10px;
+}

@@ -2,11 +2,7 @@
   <a routerLink="/" class="logo">Flight Booking Sys</a>
 
   <div class="nav-actions">
-    <button
-      type="button"
-      class="signup"
-      *ngIf="auth.isAuthenticated()"
-      (click)="logout()">
+    <button type="button" class="signup" *ngIf="auth.isAuthenticated()" (click)="logout()">
       Logout
     </button>
 
@@ -22,30 +18,19 @@
   class="toast"
   *ngIf="toastVisible"
   [class.success]="toastType === 'success'"
-  [class.error]="toastType === 'error'">
-
+  [class.error]="toastType === 'error'"
+>
   <span>{{ toastMessage }}</span>
 
   <!-- CONFIRM ACTIONS -->
   <div class="toast-actions" *ngIf="confirmLogout">
-    <button
-      type="button"
-      class="toast-btn yes"
-      (click)="confirmYes()">
-      Yes
-    </button>
+    <button type="button" class="toast-btn yes" (click)="confirmYes()">Yes</button>
 
-    <button
-      type="button"
-      class="toast-btn no"
-      (click)="confirmNo()">
-      Cancel
-    </button>
+    <button type="button" class="toast-btn no" (click)="confirmNo()">Cancel</button>
   </div>
 </div>
 
 <main class="auth-shell login-shell">
-
   <div class="hero-image login-hero">
     <div class="hero-overlay">
       <p class="eyebrow accent">Flight Booking</p>
@@ -58,13 +43,10 @@
     <div class="auth-header">
       <p class="eyebrow accent">Sign in</p>
       <h1>Welcome back</h1>
-      <p class="auth-subtitle spaced">
-        Access your bookings and search flights faster.
-      </p>
+      <p class="auth-subtitle spaced">Access your bookings and search flights faster.</p>
 
       <p *ngIf="auth.isAuthenticated()" class="auth-note">
-        You are already logged in.
-        Head to <a routerLink="/">home</a> or
+        You are already logged in. Head to <a routerLink="/">home</a> or
         <a routerLink="/history">history</a>.
       </p>
     </div>
@@ -74,8 +56,8 @@
       class="auth-form"
       (ngSubmit)="submit(form)"
       #form="ngForm"
-      novalidate>
-
+      novalidate
+    >
       <div class="input-group">
         <label>Username</label>
         <input
@@ -83,7 +65,8 @@
           name="username"
           placeholder="Enter your username"
           [(ngModel)]="username"
-          required />
+          required
+        />
       </div>
 
       <div class="input-group">
@@ -94,7 +77,8 @@
           placeholder="Enter your email"
           [(ngModel)]="email"
           required
-          email />
+          email
+        />
       </div>
 
       <div class="input-group">
@@ -104,15 +88,16 @@
           name="password"
           placeholder="Enter your password"
           [(ngModel)]="password"
-          required />
+          required
+        />
       </div>
 
       <button
         type="submit"
         class="auth-btn login-btn"
         [class.submitting]="pending"
-        [disabled]="pending">
-
+        [disabled]="pending"
+      >
         <span class="label">Login</span>
         <span class="spinner" aria-hidden="true"></span>
       </button>
@@ -122,6 +107,9 @@
       Don't have an account?
       <a routerLink="/register">Sign Up</a>
     </div>
+    <div class="auth-footer" *ngIf="!auth.isAuthenticated()">
+      Are you an Admin?
+      <a routerLink="/admin-login">Admin Login</a>
+    </div>
   </div>
-
 </main>

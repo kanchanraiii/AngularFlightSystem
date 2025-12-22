@@ -18,4 +18,8 @@ export class AirlineAdminService {
   addAirline(payload: AddAirlineRequest) {
     return this.http.post<any>(`${this.baseUrl}/addAirline`, payload);
   }
+
+  getAllAirlines() {
+    return this.http.get<any[]>(`${this.baseUrl}/getAllAirlines`);
+  }
 }

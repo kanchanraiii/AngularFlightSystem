@@ -243,3 +243,11 @@
 
   </div>
 </div>
+
+<div *ngIf="successMsg" class="toast success">
+  {{ successMsg }}
+</div>
+
+<div *ngIf="errorMsg" class="toast error">
+  {{ errorMsg }}
+</div>

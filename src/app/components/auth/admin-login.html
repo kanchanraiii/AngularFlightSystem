@@ -1,0 +1,104 @@
+<nav class="navbar">
+  <a routerLink="/" class="logo">Flight Booking Sys</a>
+
+  <div class="nav-actions">
+    <ng-container *ngIf="auth.isAuthenticated(); else guestActions">
+      <button class="login" *ngIf="auth.isAdmin()" routerLink="/admin">Admin Panel</button>
+      <button class="signup" (click)="logout()">Logout</button>
+    </ng-container>
+    <ng-template #guestActions>
+      <button class="login" routerLink="/login">User Login</button>
+      <button class="signup" routerLink="/register">User Sign Up</button>
+    </ng-template>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div
+  class="toast"
+  *ngIf="toastVisible"
+  [class.success]="toastType === 'success'"
+  [class.error]="toastType === 'error'">
+
+  <span>{{ toastMessage }}</span>
+</div>
+
+<main class="auth-shell login-shell admin-shell">
+  <div class="auth-card login-card">
+    <div class="auth-header">
+      <p class="eyebrow accent">Admin Access</p>
+      <h1>Sign in to manage</h1>
+      <p class="auth-subtitle spaced">
+        Restricted area for airline and flight management.
+      </p>
+
+      <p *ngIf="auth.isAuthenticated() && auth.isAdmin()" class="auth-note">
+        You are already logged in as admin.
+        Head to <a routerLink="/admin">Admin Dashboard</a>.
+      </p>
+    </div>
+
+    <form
+      *ngIf="!(auth.isAuthenticated() && auth.isAdmin())"
+      class="auth-form"
+      (ngSubmit)="submit(form)"
+      #form="ngForm"
+      novalidate>
+
+      <div class="input-group">
+        <label>Admin Username</label>
+        <input
+          type="text"
+          name="username"
+          placeholder="Enter admin username"
+          [(ngModel)]="username"
+          required />
+      </div>
+
+      <div class="input-group">
+        <label>Email</label>
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter your email"
+          [(ngModel)]="email"
+          required
+          email />
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input
+          type="password"
+          name="password"
+          placeholder="Enter password"
+          [(ngModel)]="password"
+          required />
+      </div>
+
+      <button
+        type="submit"
+        class="auth-btn login-btn"
+        [class.submitting]="pending"
+        [disabled]="pending">
+
+        <span class="label">Admin Login</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Not an admin?
+      <a routerLink="/login">Use the user login instead.</a>
+    </div>
+  </div>
+
+  <div class="hero-image admin-hero">
+    <div class="hero-overlay hero-overlay--admin">
+      <p class="eyebrow accent">Admin tools</p>
+      <h2>Manage airlines and flights</h2>
+      <p>Secure access for creating airlines, adding flights, and maintaining schedules.</p>
+      <p>Admins only. User accounts should continue with the standard login and booking flow.</p>
+    </div>
+  </div>
+</main>

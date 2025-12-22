@@ -14,11 +14,11 @@ import { ToastService, ToastMessage } from '../../services/toast.service';
     </div>
   `,
   styles: [
-    `:host { position: fixed; top: 16px; right: 16px; z-index: 10000; }
-     .toast { background: #333; color: #fff; padding: 12px 16px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 180px; display: flex; align-items: center; justify-content: space-between; }
-     .toast.success { background: #2e7d32; }
-     .toast.error { background: #c62828; }
-     .toast.info { background: #1565c0; }
+    `:host { position: fixed; top: 88px; right: 20px; z-index: 20000; pointer-events: none; }
+     .toast { background: rgba(31,41,55,0.95); color: #fff; padding: 10px 14px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); min-width: 220px; display: inline-flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; pointer-events: auto; }
+     .toast.success { background: #16a34a; }
+     .toast.error { background: #dc2626; }
+     .toast.info { background: #2563eb; }
      .toast .close { background: transparent; border: none; color: #fff; font-size: 16px; cursor: pointer; margin-left: 12px; }
     `
   ]
