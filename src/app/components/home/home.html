@@ -78,7 +78,12 @@
           </div>
         </div>
 
-        <button class="search-btn" (click)="search()">Search flights</button>
+        <button
+          class="search-btn"
+          (click)="search()"
+          [disabled]="!canSearch()">
+          Search flights
+        </button>
 
       </section>
     </main>

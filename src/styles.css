@@ -532,6 +532,14 @@ body {
   box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
 }
 
+.search-btn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
 .helper {
   margin-top: 10px;
   color: var(--muted);

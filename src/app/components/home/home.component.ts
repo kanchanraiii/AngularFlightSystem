@@ -170,6 +170,16 @@ export class HomeComponent implements OnInit {
     return this.airlineMap[code] || f.airlineCode || f.flightNumber || '—';
   }
 
+  canSearch(): boolean {
+    const fromTrim = (this.from || '').trim();
+    const toTrim = (this.to || '').trim();
+    const missingBase = !fromTrim || !toTrim || !this.departureDate;
+    const missingReturn = this.tripType === 'round-trip' && !this.returnDate;
+    const sameCity =
+      fromTrim && toTrim && fromTrim.toLowerCase() === toTrim.toLowerCase();
+    return !missingBase && !missingReturn && !sameCity;
+  }
+
   search() {
     this.sourceSuggestions = [];
     this.destSuggestions = [];

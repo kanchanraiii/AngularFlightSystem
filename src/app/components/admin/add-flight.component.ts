@@ -333,6 +333,7 @@ export class AddFlightComponent implements OnInit {
   }
 
   logout() {
+    if (!confirm('Do you really want to log out?')) return;
     this.auth.logout();
     this.router.navigate(['/login']);
   }
