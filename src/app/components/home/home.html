@@ -13,6 +13,7 @@
       <div class="nav-actions">
         <ng-container *ngIf="auth.isAuthenticated(); else guestActions">
           <button class="login" routerLink="/history">User History</button>
+          <button *ngIf="auth.isAdmin()">Admin Panel</button>
           <button class="signup" (click)="logout()">Logout</button>
         </ng-container>
         <ng-template #guestActions>
@@ -20,6 +21,7 @@
           <button class="signup" routerLink="/register">Sign Up</button>
         </ng-template>
       </div>
+      
     </nav>
 
     <main class="search-shell">

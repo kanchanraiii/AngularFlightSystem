@@ -10,10 +10,9 @@ import { Router, RouterLink } from '@angular/router';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.html',
-  styleUrls: ['./login.css']
+  styleUrls: ['./login.css'],
 })
 export class LoginComponent {
-
   email = '';
   username = '';
   password = '';
@@ -31,11 +30,7 @@ export class LoginComponent {
   private toastTimeout: any;
   private readonly animationHoldMs = 1100;
 
-  constructor(
-    public auth: AuthService,
-    private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {}
+  constructor(public auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   async submit(form: NgForm) {
     if (this.pending) return;
@@ -56,21 +51,21 @@ export class LoginComponent {
 
     try {
       const token = await firstValueFrom(
-        this.auth.login(
-          { username: this.username, password: this.password },
-          this.email
-        )
+        this.auth.login({ username: this.username, password: this.password }, this.email)
       );
 
       this.token = token;
       this.showToast('Logged in successfully', 'success');
       this.cdr.detectChanges();
-      await this.router.navigate(['/']);
 
+      if (this.auth.isAdmin()) {
+        await this.router.navigate(['/admin']);
+      } else {
+        await this.router.navigate(['/']);
+      }
     } catch {
       this.message = 'Login failed.';
       this.showToast('Login failed. Check your credentials.', 'error');
-
     } finally {
       this.pending = false;
       this.cdr.detectChanges();
@@ -78,17 +73,14 @@ export class LoginComponent {
   }
 
   logout() {
-    this.showConfirmToast(
-      'Do you really want to log out?',
-      () => {
-        this.auth.logout();
-        this.router.navigate(['/login']);
-      }
-    );
+    this.showConfirmToast('Do you really want to log out?', () => {
+      this.auth.logout();
+      this.router.navigate(['/login']);
+    });
   }
 
   private showToast(message: string, type: 'success' | 'error') {
-    clearTimeout(this.toastTimeout);        
+    clearTimeout(this.toastTimeout);
     this.toastMessage = message;
     this.toastType = type;
     this.toastVisible = true;
@@ -101,7 +93,7 @@ export class LoginComponent {
   }
 
   private showConfirmToast(message: string, onConfirm: () => void) {
-    clearTimeout(this.toastTimeout);          
+    clearTimeout(this.toastTimeout);
     this.toastType = '';
     this.toastVisible = true;
     this.confirmLogout = true;
@@ -130,6 +122,6 @@ export class LoginComponent {
     this.cdr.detectChanges();
   }
   private sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
