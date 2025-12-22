@@ -4,11 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { BookingRecord, BookingService } from '../../services/booking.service';
 import { firstValueFrom } from 'rxjs';
+import { ToastComponent } from '../shared/toast.component';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ToastComponent],
   templateUrl: './history.html'
 })
 export class HistoryComponent implements OnInit {
@@ -35,7 +37,8 @@ export class HistoryComponent implements OnInit {
     public auth: AuthService,
     private router: Router,
     private booking: BookingService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
   ) {
     this.email = this.auth.getEmail() || this.auth.getUsername() || '';
   }
@@ -137,6 +140,7 @@ export class HistoryComponent implements OnInit {
   }
 
   showToast(message: string, type: 'success' | 'error') {
+    this.toast.show(message, type);
     this.toastMessage = message;
     this.toastType = type;
     this.cdr.detectChanges();

@@ -20,6 +20,11 @@ import { ToastComponent } from '../shared/toast.component';
   styleUrls: ['./booking.css']
 })
 export class BookingComponent implements OnInit {
+  private readonly baseUrl =
+    window.location.port === '9000'
+      ? 'http://localhost:9000/booking/api/booking'
+      : '/booking/api/booking';
+
   tripType = '';
   contactName = '';
   contactEmail = '';
@@ -92,7 +97,7 @@ export class BookingComponent implements OnInit {
 
     console.log('[Booking] sending payload', payload);
 
-    this.http.post(`http://localhost:9000/booking/api/booking/${this.flightId}`, payload, { observe: 'response' }).subscribe({
+    this.http.post(`${this.baseUrl}/${this.flightId}`, payload, { observe: 'response' }).subscribe({
       next: (res: HttpResponse<any>) => {
         console.log('[Booking] response received', res.status, res.body);
         if (res.status === 200 || res.status === 201) {
@@ -111,7 +116,9 @@ export class BookingComponent implements OnInit {
       },
       error: (err) => {
         console.error('[Booking] request failed', err);
-        this.message = 'Booking failed';
+        this.message = err?.status === 0
+          ? 'Booking service unreachable. Check backend/proxy.'
+          : 'Booking failed';
         this.toast.show(this.message, 'error');
         this.isSubmitting = false;
       }
