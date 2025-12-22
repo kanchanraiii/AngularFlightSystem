@@ -40,6 +40,41 @@ User history uses the stored JWT and email from session to call `/booking/api/bo
   <small>Figure 4. User history preview</small>
 </p>
 
+### Add Airline (Admin)
+<p align="center">
+  <img src="repository-media/add_an_airline.gif" alt="Add airline preview" />
+  <br />
+  <small>Figure 4.1. Add airline</small>
+</p>
+
+### Add Flight (Admin)
+<p align="center">
+  <img src="repository-media/add_a_flight.gif" alt="Add flight preview" />
+  <br />
+  <small>Figure 4.2. Add flight</small>
+</p>
+
+### Admin Login
+<p align="center">
+  <img src="repository-media/admin_login.gif" alt="Admin login preview" />
+  <br />
+  <small>Figure 4.3. Admin login</small>
+</p>
+
+### Change Password
+<p align="center">
+  <img src="repository-media/change_password.gif" alt="Change password preview" />
+  <br />
+  <small>Figure 4.4. Change password</small>
+</p>
+
+### Forgot Password
+<p align="center">
+  <img src="repository-media/forgot_password.gif" alt="Forgot password preview" />
+  <br />
+  <small>Figure 4.5. Forgot password</small>
+</p>
+
 
 
 ## Search Flights Showcase
