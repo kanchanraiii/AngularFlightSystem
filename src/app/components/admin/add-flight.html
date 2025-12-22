@@ -1,32 +1,245 @@
-  <h3>Add Flight</h3>
+<style>
+  .page-wrapper {
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
 
-    <form (ngSubmit)="submit()">
-      <input
-        type="text"
-        name="flightNumber"
-        [(ngModel)]="flightNumber"
-        placeholder="Flight Number"
-        required
-      />
-      <br /><br />
+  .form-card {
+    width: 100%;
+    max-width: 900px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.06);
+  }
 
-      <input
-        type="text"
-        name="source"
-        [(ngModel)]="source"
-        placeholder="Source"
-        required
-      />
-      <br /><br />
+  .form-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 
-      <input
-        type="text"
-        name="destination"
-        [(ngModel)]="destination"
-        placeholder="Destination"
-        required
-      />
-      <br /><br />
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
 
-      <button type="submit">Add Flight</button>
-    </form>
+  .form-group label {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .required {
+    color: #dc2626;
+    margin-left: 4px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  /* ===== ERROR STATES ===== */
+  .field-error {
+    color: #dc2626;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .input-error {
+    border-color: #dc2626 !important;
+    color: #dc2626;
+  }
+
+  .label-error {
+    color: #dc2626 !important;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+  }
+
+  .primary-btn {
+    padding: 14px 22px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+
+  .primary-btn:disabled {
+    background: rgba(255, 107, 53, 0.45);
+    cursor: not-allowed;
+  }
+
+  .ghost-btn {
+    padding: 14px 22px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text);
+  }
+
+  .ghost-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+</style>
+
+<nav class="navbar">
+  <a routerLink="/admin" class="logo">Flight Booking Sys</a>
+
+  <div class="nav-actions">
+    <button class="login" routerLink="/admin/add-airline">
+      Add Airline
+    </button>
+    <button class="signup" (click)="logout()">Logout</button>
+  </div>
+</nav>
+
+
+<div class="page-wrapper">
+  <div class="form-card">
+
+    <h1 class="form-title">Add Flight</h1>
+
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Airline Code<span class="required">*</span></label>
+        <input [(ngModel)]="flight.airlineCode" />
+      </div>
+
+     
+      <div class="form-group">
+
+        <div *ngIf="flightNumberExists" class="field-error">
+          Flight number already exists
+        </div>
+
+        <label [class.label-error]="flightNumberExists">
+          Flight Number<span class="required">*</span>
+        </label>
+
+        <input
+          [(ngModel)]="flight.flightNumber"
+          (ngModelChange)="onFlightNumberChange()"
+          [class.input-error]="flightNumberExists" />
+      </div>
+
+      <div class="form-group">
+        <label>Source City<span class="required">*</span></label>
+        <input
+          list="cities"
+          [(ngModel)]="flight.sourceCity"
+          (ngModelChange)="flight.sourceCity = flight.sourceCity.toUpperCase()"
+          placeholder="Type city name" />
+      </div>
+
+      <div class="form-group">
+        <label>Destination City<span class="required">*</span></label>
+        <input
+          list="cities"
+          [(ngModel)]="flight.destinationCity"
+          (ngModelChange)="flight.destinationCity = flight.destinationCity.toUpperCase()"
+          placeholder="Type city name" />
+      </div>
+
+      <datalist id="cities">
+        <option *ngFor="let c of allowedCities" [value]="c"></option>
+      </datalist>
+
+      <div class="form-group">
+        <label>Departure Date<span class="required">*</span></label>
+        <input type="date" [min]="today" [(ngModel)]="flight.departureDate" />
+      </div>
+
+      <div class="form-group">
+        <label>Departure Time<span class="required">*</span></label>
+        <input type="time" [(ngModel)]="flight.departureTime" />
+      </div>
+
+      <div class="form-group">
+        <label>Arrival Date<span class="required">*</span></label>
+        <input
+          type="date"
+          [min]="flight.departureDate || today"
+          [(ngModel)]="flight.arrivalDate" />
+      </div>
+
+      <div class="form-group">
+        <label>Arrival Time<span class="required">*</span></label>
+        <input type="time" [(ngModel)]="flight.arrivalTime" />
+      </div>
+
+      <div class="form-group">
+        <label>Total Seats<span class="required">*</span></label>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          onkeydown="return event.key !== '-' && event.key !== 'e' && event.key !== '+'"
+          [(ngModel)]="flight.totalSeats" />
+      </div>
+
+      <div class="form-group">
+        <label>Price (₹)<span class="required">*</span></label>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          onkeydown="return event.key !== '-' && event.key !== 'e' && event.key !== '+'"
+          [(ngModel)]="flight.price" />
+      </div>
+
+      <div class="form-group">
+        <label>Meal Available<span class="required">*</span></label>
+        <select [(ngModel)]="flight.mealAvailable">
+          <option [ngValue]="true">Yes</option>
+          <option [ngValue]="false">No</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="actions">
+      <button
+        class="ghost-btn"
+        type="button"
+        (click)="resetForm()"
+        [disabled]="loading">
+        Reset
+      </button>
+
+      <button
+        class="primary-btn"
+        type="button"
+        (click)="submit()"
+        [disabled]="loading || !isValid() || flightNumberExists">
+        {{ loading ? 'Adding...' : 'Add Flight' }}
+      </button>
+    </div>
+
+  </div>
+</div>
