@@ -3,6 +3,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 32px 24px;
+    padding-top: 100px;
   }
 
   .admin-title {
@@ -92,6 +93,20 @@
     color: var(--muted);
     font-size: 13px;
   }
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    z-index: 1000;
+  }
 
   .price {
     font-weight: 700;
@@ -110,7 +125,6 @@
 </nav>
 
 <div class="admin-wrapper">
-
   <div class="admin-card">
     <h1 class="admin-title">Admin Dashboard</h1>
     <p class="helper">Manage flights and airlines</p>
@@ -153,15 +167,17 @@
 
         <tbody *ngIf="!loading && filteredFlights.length">
           <tr *ngFor="let f of filteredFlights">
-            <td><strong>{{ f.flightNumber }}</strong></td>
+            <td>
+              <strong>{{ f.flightNumber }}</strong>
+            </td>
             <td>{{ f.airlineCode }}</td>
             <td>{{ f.sourceCity }} → {{ f.destinationCity }}</td>
             <td>
-              {{ f.departureDate | date:'dd MMM yyyy' }}<br />
+              {{ f.departureDate | date : 'dd MMM yyyy' }}<br />
               <span class="muted">{{ f.departureTime }}</span>
             </td>
             <td>
-              {{ f.arrivalDate | date:'dd MMM yyyy' }}<br />
+              {{ f.arrivalDate | date : 'dd MMM yyyy' }}<br />
               <span class="muted">{{ f.arrivalTime }}</span>
             </td>
             <td>{{ f.totalSeats }}</td>
@@ -178,23 +194,18 @@
         <!--If no flights found-->
         <tbody *ngIf="!loading && !filteredFlights.length">
           <tr>
-            <td colspan="8" class="muted" style="text-align:center">
-              No flights found
-            </td>
+            <td colspan="8" class="muted" style="text-align: center">No flights found</td>
           </tr>
         </tbody>
 
         <!--loading flights text-->
         <tbody *ngIf="loading">
           <tr>
-            <td colspan="8" style="text-align:center">
-              Loading flights...
-            </td>
+            <td colspan="8" style="text-align: center">Loading flights...</td>
           </tr>
         </tbody>
       </table>
     </div>
-
   </div>
 </div>
 
