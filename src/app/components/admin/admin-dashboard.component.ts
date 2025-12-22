@@ -1,32 +1,41 @@
-import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
-import {FlightAdminService,Flight} from '../../services/flight-admin.service';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
+import {FlightAdminService,Flight} from '../../services/flight-admin.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   standalone: true,
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.html',
-   imports: [RouterModule, CommonModule]
+  imports: [RouterModule, CommonModule, FormsModule]
 })
-export class AdminDashboardComponent {
-  flights:Flight[]=[];
-  loading=false;
-  error='';
-  constructor(private auth: AuthService,private router: Router,private flightService:FlightAdminService) {
-  }
+export class AdminDashboardComponent implements OnInit {
 
-  ngOnInit():void{
+  allFlights: Flight[] = [];
+  filteredFlights: Flight[] = [];
+  selectedAirline = '';
+  selectedStatus = 'ALL';
+  loading = false;
+  error = '';
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private flightService: FlightAdminService
+  ) {}
+
+  ngOnInit(): void {
     this.loadFlights();
   }
 
-  loadFlights(){
+  loadFlights() {
     this.loading = true;
-    this.error = '';
+
     this.flightService.getAllFlights().subscribe({
       next: (data) => {
-        this.flights = data;
+        this.allFlights = data;
+        this.applyFilters();
         this.loading = false;
       },
       error: () => {
@@ -34,6 +43,38 @@ export class AdminDashboardComponent {
         this.loading = false;
       }
     });
+  }
+
+  applyFilters() {
+    this.filteredFlights = this.allFlights.filter(flight => {
+      if (this.selectedAirline && flight.airlineCode !== this.selectedAirline) {
+        return false;
+      }
+      if (this.selectedStatus !== 'ALL') {
+        const isDeparted = this.isDepartedFlight(flight);
+        if (this.selectedStatus === 'LIVE' && isDeparted) {
+          return false;
+        }
+        if (this.selectedStatus === 'DEPARTED' && !isDeparted) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  isDepartedFlight(flight: Flight): boolean {
+    const today = new Date();
+    const departureDateTime = new Date(
+      `${flight.departureDate}T${flight.departureTime}`
+    );
+    return departureDateTime < today;
+  }
+
+  get uniqueAirlines(): string[] {
+    return Array.from(
+      new Set(this.allFlights.map(f => f.airlineCode))
+    );
   }
 
   logout() {

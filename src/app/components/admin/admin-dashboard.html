@@ -1,13 +1,8 @@
 <style>
-  /* ================= ADMIN LAYOUT ================= */
   .admin-wrapper {
     max-width: 1200px;
     margin: 0 auto;
     padding: 32px 24px;
-  }
-
-  .admin-header {
-    margin-bottom: 24px;
   }
 
   .admin-title {
@@ -16,9 +11,9 @@
     background: linear-gradient(90deg, var(--primary), var(--secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
   }
 
-  /* ================= ADMIN CARD ================= */
   .admin-card {
     background: #ffffff;
     border: 1px solid var(--border);
@@ -27,12 +22,11 @@
     box-shadow: 0 18px 36px rgba(0, 0, 0, 0.06);
   }
 
-  /* ================= FILTERS ================= */
   .filter-card {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
-    margin-bottom: 20px;
+    margin: 20px 0;
   }
 
   .filter-group {
@@ -59,7 +53,6 @@
     border-color: var(--primary);
   }
 
-  /* ================= TABLE ================= */
   .table-wrapper {
     overflow-x: auto;
   }
@@ -83,7 +76,6 @@
     font-size: 14px;
   }
 
-  /* alternating rows */
   .results-table tbody tr:nth-child(odd) {
     background: #ffffff;
   }
@@ -107,32 +99,25 @@
   }
 </style>
 
-<!-- ================= ADMIN NAVBAR ================= -->
 <nav class="navbar">
   <a routerLink="/admin" class="logo">Flight Booking Sys</a>
 
   <div class="nav-actions">
     <button class="login" routerLink="/admin/add-airline">Add Airline</button>
-
     <button class="login" routerLink="/admin/add-flight">Add Flight</button>
-
     <button class="signup" (click)="logout()">Logout</button>
   </div>
 </nav>
 
-<!-- ================= ADMIN DASHBOARD ================= -->
 <div class="admin-wrapper">
-  <div class="admin-header">
-    <h1 class="admin-title">Admin Dashboard</h1>
-    <p class="helper">Manage flights and airlines</p>
-  </div>
 
   <div class="admin-card">
-    <!-- FILTERS -->
+    <h1 class="admin-title">Admin Dashboard</h1>
+    <p class="helper">Manage flights and airlines</p>
     <div class="filter-card">
       <div class="filter-group">
         <label>Flight Status</label>
-        <select>
+        <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
           <option value="ALL">All Flights</option>
           <option value="LIVE">Live Flights</option>
           <option value="DEPARTED">Departed Flights</option>
@@ -141,16 +126,16 @@
 
       <div class="filter-group">
         <label>Airline</label>
-        <select>
+        <select [(ngModel)]="selectedAirline" (change)="applyFilters()">
           <option value="">All Airlines</option>
-          <option>GA</option>
-          <option>AI</option>
-          <option>6E</option>
+          <option *ngFor="let a of uniqueAirlines" [value]="a">
+            {{ a }}
+          </option>
         </select>
       </div>
     </div>
 
-    <!-- TABLE -->
+    <!--table to list flights-->
     <div class="table-wrapper">
       <table class="results-table">
         <thead>
@@ -166,26 +151,20 @@
           </tr>
         </thead>
 
-        <tbody *ngIf="!loading && flights.length">
-          <tr *ngFor="let f of flights">
-            <td>
-              <strong>{{ f.flightNumber }}</strong>
-            </td>
+        <tbody *ngIf="!loading && filteredFlights.length">
+          <tr *ngFor="let f of filteredFlights">
+            <td><strong>{{ f.flightNumber }}</strong></td>
             <td>{{ f.airlineCode }}</td>
             <td>{{ f.sourceCity }} → {{ f.destinationCity }}</td>
-
             <td>
-              {{ f.departureDate | date : 'dd MMM yyyy' }}<br />
+              {{ f.departureDate | date:'dd MMM yyyy' }}<br />
               <span class="muted">{{ f.departureTime }}</span>
             </td>
-
             <td>
-              {{ f.arrivalDate | date : 'dd MMM yyyy' }}<br />
+              {{ f.arrivalDate | date:'dd MMM yyyy' }}<br />
               <span class="muted">{{ f.arrivalTime }}</span>
             </td>
-
-            <td>{{ f.availableSeats }} / {{ f.totalSeats }}</td>
-
+            <td>{{ f.totalSeats }}</td>
             <td>
               <span class="badge">
                 {{ f.mealAvailable ? 'Yes' : 'No' }}
@@ -196,19 +175,26 @@
           </tr>
         </tbody>
 
-        <tbody *ngIf="!loading && !flights.length">
+        <!--If no flights found-->
+        <tbody *ngIf="!loading && !filteredFlights.length">
           <tr>
-            <td colspan="8" style="text-align: center" class="muted">No flights found</td>
+            <td colspan="8" class="muted" style="text-align:center">
+              No flights found
+            </td>
           </tr>
         </tbody>
 
+        <!--loading flights text-->
         <tbody *ngIf="loading">
           <tr>
-            <td colspan="8" style="text-align: center">Loading flights...</td>
+            <td colspan="8" style="text-align:center">
+              Loading flights...
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
+
   </div>
 </div>
 
