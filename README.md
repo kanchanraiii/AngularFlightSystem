@@ -16,6 +16,9 @@ Backend Overview: JWT-secured Spring Boot microservices behind an API Gateway (m
 
 Frontend API calls traverse the gateway on port 9000 to the flight and booking services once the Docker stack is running.
 
+- Role-based access implemented: admins have dedicated protected routes (admin guard); users have separate protected routes (auth guard).
+
+
 ## Project Report 
 
 [Report](https://github.com/kanchanraiii/AngularFlightSystem/raw/main/Week%208%20-%20Angular%20Flight%20Booking%20Sys.pdf)
