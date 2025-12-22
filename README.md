@@ -1,7 +1,7 @@
 # FlightBookingSystem w/ Angular
 
 The Angular front end relies on a Dockerized microservice backend (API gateway exposed on port 9000) that is brought up via a single Docker Compose stack. Backend repository: https://github.com/kanchanraiii/FlightBookingSysWSecurity.
-
+The backend repository has separted dockerized instance and local instance too, applied by Spring Profiling.
 
 <p align="center">
   <img src="repository-media/eureka_server.png" alt="Eureka dashboard showing registered instances" />
@@ -22,11 +22,8 @@ Frontend API calls traverse the gateway on port 9000 to the flight and booking s
 
 ## Frontend Authorization Flow
 
-<p align="center">
-  <img src="repository-media/authorization_flow.png" alt="Eureka dashboard showing registered instances" />
-  <br />
-  <small>Figure 3. JWT Authorization Flowchart</small>
-</p>
+<img width="3432" height="8600" alt="Architecture" src="https://github.com/user-attachments/assets/815709e6-28c3-4d5e-b4d1-9198dce7bf7d" />
+
 
 In production  the login/register forms call the gateway, capture the JWT, and store it in localStorage plus an in-memory signal. An HTTP interceptor attaches `Authorization: Bearer <token>` to every request. A guard blocks the protected route when no token is present and redirects to login; the protected page reflects the live session and provides logout, which clears storage and state so subsequent navigation requires re-authentication.
 
