@@ -21,7 +21,7 @@ Frontend API calls traverse the gateway on port 9000 to the flight and booking s
 
 ## Project Report 
 
-[Report](https://github.com/kanchanraiii/AngularFlightSystem/raw/main/Week%208%20-%20Angular%20Flight%20Booking%20Sys.pdf)
+[Report](https://github.com/kanchanraiii/AngularFlightSystem/blob/main/Week%209%20-%20Angular%20Flight%20Booking%20Sys.pdf)
 
 ## Frontend Authorization Flow
 
