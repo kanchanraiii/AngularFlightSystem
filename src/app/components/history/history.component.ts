@@ -30,7 +30,7 @@ export class HistoryComponent implements OnInit {
   cancelTarget: BookingRecord | null = null;
   cancelBlockedTarget: BookingRecord | null = null;
 
-  // ✅ FIXED FILTER TYPE
+ 
   filter: 'ALL' | 'CONFIRMED' | 'CANCELLED' | 'DEPARTED' = 'ALL';
 
   constructor(
@@ -42,9 +42,6 @@ export class HistoryComponent implements OnInit {
   ) {
     this.email = this.auth.getEmail() || this.auth.getUsername() || '';
   }
-
-  /* ================= FILTERING ================= */
-
   get filteredRecords(): BookingRecord[] {
     if (this.filter === 'ALL') return this.records;
 
@@ -57,7 +54,6 @@ export class HistoryComponent implements OnInit {
     this.filter = value;
   }
 
-  /* ================= AUTH ================= */
 
   logout() {
     if (!confirm('Do you really want to log out?')) return;
@@ -65,7 +61,6 @@ export class HistoryComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  /* ================= INIT ================= */
 
   ngOnInit() {
     if (!this.auth.isAuthenticated()) return;
@@ -79,7 +74,6 @@ export class HistoryComponent implements OnInit {
     this.fetchFlights();
   }
 
-  /* ================= DATA ================= */
 
   async fetchHistory() {
     if (!this.email) return;
@@ -117,7 +111,6 @@ export class HistoryComponent implements OnInit {
     return id ? this.flightsById.get(id) || null : null;
   }
 
-  /* ================= UI ACTIONS ================= */
 
   toggle(record: BookingRecord) {
     this.expanded = this.expanded === record ? null : record;
@@ -152,7 +145,6 @@ export class HistoryComponent implements OnInit {
     }, 3000);
   }
 
-  /* ================= CANCELLATION ================= */
 
   openCancelModal(record: BookingRecord) {
     this.cancelTarget = record;
@@ -181,7 +173,6 @@ export class HistoryComponent implements OnInit {
     this.cancelTarget = null;
   }
 
-  /* ================= DATE CHECK ================= */
 
   getFlightDeparture(
     record: BookingRecord,
@@ -222,7 +213,6 @@ export class HistoryComponent implements OnInit {
     return false;
   }
 
-  /* ================= API ================= */
 
   async cancelBooking(record: BookingRecord) {
     const token = this.auth.getToken();
@@ -265,8 +255,8 @@ export class HistoryComponent implements OnInit {
   const now = Date.now();
   const outbound = this.getFlightDeparture(record, 'outbound');
   if (!outbound) return false;
-  if (outbound.getTime() <= now) return false;
-  if (this.isWithin24HoursForFlight(record)) return false;
+  // if (outbound.getTime() <= now) return false;
+  // if (this.isWithin24HoursForFlight(record)) return false;
   return true;
 }
 

@@ -174,4 +174,3 @@ export class BookingComponent implements OnInit {
     this.router.navigate(['/']);
   }
 }
-  // =========================

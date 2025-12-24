@@ -713,7 +713,6 @@ body {
   }
 }
 
-/* Auth page specific styles */
 .auth-card {
   width: 100%;
   max-width: 450px;
@@ -888,9 +887,6 @@ body {
   margin: 0 0 8px 0;
 }
 
-.printable {
-  /* marker class for print */
-}
 
 @media print {
   body * {
