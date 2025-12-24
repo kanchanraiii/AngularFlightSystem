@@ -55,6 +55,13 @@ export class LoginComponent {
       );
 
       this.token = token;
+      if (!this.auth.isAdmin() && this.auth.requiresPasswordChange()) {
+        this.showToast('Please change your password to continue.', 'error');
+        this.cdr.detectChanges();
+        await this.router.navigate(['/change-password'], { queryParams: { reason: 'password_expired' } });
+        return;
+      }
+
       this.showToast('Logged in successfully', 'success');
       this.cdr.detectChanges();
 

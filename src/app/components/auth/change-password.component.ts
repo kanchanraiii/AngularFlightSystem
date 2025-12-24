@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastComponent } from '../shared/toast.component';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
@@ -14,7 +14,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './change-password.html',
   styleUrls: ['./login.css']
 })
-export class ChangePasswordComponent {
+export class ChangePasswordComponent implements OnInit {
   readonly authBase =
     window.location.port === '9000' ? 'http://localhost:9000/auth' : '/auth';
 
@@ -38,8 +38,16 @@ export class ChangePasswordComponent {
     private toast: ToastService,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
     public auth: AuthService
   ) {}
+
+  ngOnInit(): void {
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+    if (reason === 'password_expired' || this.auth.requiresPasswordChange()) {
+      this.toast.show('Your password is over 90 days old. Please update to continue.', 'error');
+    }
+  }
 
   passwordError(): string {
     if (!this.newPassword) return 'New password is required';
@@ -151,6 +159,7 @@ export class ChangePasswordComponent {
         { responseType: 'text' }
       ).toPromise();
       this.toast.show('Password updated successfully', 'success');
+      this.auth.markPasswordChanged();
       this.mode = 'change';
       this.resetRequested = false;
       this.resetUsername = '';
@@ -197,6 +206,7 @@ export class ChangePasswordComponent {
       ).toPromise();
 
       this.toast.show('Password updated successfully', 'success');
+      this.auth.markPasswordChanged();
       this.currentPassword = '';
       this.newPassword = '';
       this.confirmPassword = '';

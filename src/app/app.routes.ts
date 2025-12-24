@@ -8,10 +8,11 @@ import { BookingComponent } from './components/booking/bookflight.component';
 import { adminGuard } from './auth/admin.guard';
 import { AdminLoginComponent } from './components/auth/admin-login.component';
 import { ChangePasswordComponent } from './components/auth/change-password.component';
+import { passwordFreshGuard } from './auth/password-fresh.guard';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'home', component: HomeComponent },
+  { path: '', component: HomeComponent, canActivate: [passwordFreshGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [passwordFreshGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'admin-login', component: AdminLoginComponent },
   { path: 'register', component: RegisterComponent },
