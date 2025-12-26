@@ -83,32 +83,51 @@
       <form #form="ngForm" (ngSubmit)="submit(form)">
 
         <div class="form-group">
-          <label>Trip Type</label>
-          <select name="tripType" [(ngModel)]="tripType" required [disabled]="isSubmitting">
+          <label>Trip Type <span class="required">*</span></label>
+          <select
+            name="tripType"
+            [(ngModel)]="tripType"
+            #tripTypeCtrl="ngModel"
+            required
+            [class.input-error]="tripTypeCtrl.invalid && tripTypeCtrl.touched"
+            [disabled]="isSubmitting">
             <option value="">Select</option>
             <option value="ONE_WAY">One Way</option>
             <option value="ROUND_TRIP">Round Trip</option>
           </select>
+          <div class="field-error" *ngIf="tripTypeCtrl.invalid && tripTypeCtrl.touched">
+            Trip type is required.
+          </div>
         </div>
 
         <div class="form-group">
-          <label>Contact Name</label>
+          <label>Contact Name <span class="required">*</span></label>
           <input
             type="text"
             name="contactName"
             [(ngModel)]="contactName"
+            #contactNameCtrl="ngModel"
             required
+            [class.input-error]="contactNameCtrl.invalid && contactNameCtrl.touched"
             [disabled]="isSubmitting" />
+          <div class="field-error" *ngIf="contactNameCtrl.invalid && contactNameCtrl.touched">
+            Contact name is required.
+          </div>
         </div>
 
         <div class="form-group">
-          <label>Contact Email</label>
+          <label>Contact Email <span class="required">*</span></label>
           <input
             type="email"
             name="contactEmail"
             [(ngModel)]="contactEmail"
+            #contactEmailCtrl="ngModel"
             required
+            [class.input-error]="contactEmailCtrl.invalid && contactEmailCtrl.touched"
             [disabled]="isSubmitting" />
+          <div class="field-error" *ngIf="contactEmailCtrl.invalid && contactEmailCtrl.touched">
+            Enter a valid email.
+          </div>
         </div>
 
         <h3 class="section-title">Passengers</h3>
@@ -145,40 +164,61 @@
                 type="text"
                 name="name{{i}}"
                 [(ngModel)]="p.name"
+                #nameCtrl="ngModel"
                 placeholder="Name"
                 required
+                [class.input-error]="nameCtrl.invalid && nameCtrl.touched"
                 [disabled]="isSubmitting" />
+              <div class="field-error" *ngIf="nameCtrl.invalid && nameCtrl.touched">
+                Name is required.
+              </div>
 
               <input
                 type="number"
                 name="age{{i}}"
                 [(ngModel)]="p.age"
+                #ageCtrl="ngModel"
                 placeholder="Age"
                 required
+                min="1"
+                [class.input-error]="ageCtrl.invalid && ageCtrl.touched"
                 [disabled]="isSubmitting" />
+              <div class="field-error" *ngIf="ageCtrl.invalid && ageCtrl.touched">
+                Enter a valid age.
+              </div>
 
               <select
                 name="gender{{i}}"
                 [(ngModel)]="p.gender"
+                #genderCtrl="ngModel"
                 required
+                [class.input-error]="genderCtrl.invalid && genderCtrl.touched"
                 [disabled]="isSubmitting">
                 <option value="">Gender</option>
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
               </select>
+              <div class="field-error" *ngIf="genderCtrl.invalid && genderCtrl.touched">
+                Gender is required.
+              </div>
 
               <div class="seat-input">
                 <input
                   type="text"
                   name="seat{{i}}"
                   [(ngModel)]="p.seatOutbound"
+                  #seatCtrl="ngModel"
                   placeholder="Seat (click map)"
                   required
                   readonly
                   (focus)="setActivePassenger(i)"
                   (click)="setActivePassenger(i)"
+                  [class.input-error]="seatCtrl.invalid && seatCtrl.touched"
                   [disabled]="isSubmitting" />
                 <small class="hint">Pick a seat from the map.</small>
+                <div class="field-error" *ngIf="seatCtrl.invalid && seatCtrl.touched">
+                  Seat selection is required.
+                </div>
               </div>
             </div>
 
