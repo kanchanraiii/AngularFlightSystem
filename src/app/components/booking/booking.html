@@ -25,115 +25,184 @@
     <p>Flight ID is missing. Please select a flight first.</p>
   </div>
 
-  <div *ngIf="flightId && !bookingSuccess" class="card booking-card">
-    <h2 class="title">Flight Booking</h2>
+  <div *ngIf="flightId && !bookingSuccess" class="booking-layout">
 
-    <form #form="ngForm" (ngSubmit)="submit(form)">
-
-      <div class="form-group">
-        <label>Trip Type</label>
-        <select name="tripType" [(ngModel)]="tripType" required [disabled]="isSubmitting">
-          <option value="">Select</option>
-          <option value="ONE_WAY">One Way</option>
-          <option value="ROUND_TRIP">Round Trip</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Contact Name</label>
-        <input
-          type="text"
-          name="contactName"
-          [(ngModel)]="contactName"
-          required
-          [disabled]="isSubmitting" />
-      </div>
-
-      <div class="form-group">
-        <label>Contact Email</label>
-        <input
-          type="email"
-          name="contactEmail"
-          [(ngModel)]="contactEmail"
-          required
-          [disabled]="isSubmitting" />
-      </div>
-
-      <h3 class="section-title">Passengers</h3>
-
-      <div class="passenger-list">
-        <div
-          class="passenger-card"
-          *ngFor="let p of passengers; let i = index">
-
-          <div class="passenger-header">
-            <span>Passenger {{ i + 1 }}</span>
-            <button
-              type="button"
-              class="remove-btn"
-              *ngIf="passengers.length > 1"
-              (click)="removePassenger(i)"
-              [disabled]="isSubmitting">
-              Remove
-            </button>
-          </div>
-
-          <div class="grid">
-            <input
-              type="text"
-              name="name{{i}}"
-              [(ngModel)]="p.name"
-              placeholder="Name"
-              required
-              [disabled]="isSubmitting" />
-
-            <input
-              type="number"
-              name="age{{i}}"
-              [(ngModel)]="p.age"
-              placeholder="Age"
-              required
-              [disabled]="isSubmitting" />
-
-            <select
-              name="gender{{i}}"
-              [(ngModel)]="p.gender"
-              required
-              [disabled]="isSubmitting">
-              <option value="">Gender</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-            </select>
-
-            <input
-              type="text"
-              name="seat{{i}}"
-              [(ngModel)]="p.seatOutbound"
-              placeholder="Seat"
-              required
-              [disabled]="isSubmitting" />
-          </div>
-
+    <div class="card seat-card">
+      <div class="seat-card-header">
+        <div>
+          <p class="eyebrow">Seat Map</p>
+          <h2 class="title">Pick your seats</h2>
+          <p class="seat-meta" *ngIf="flightDetails">
+            {{ flightDetails?.flightNumber || flightDetails?.airlineCode || 'Flight' }} |
+            {{ flightDetails?.sourceCity }} -> {{ flightDetails?.destinationCity }}
+            <span class="pill" *ngIf="flightDetails?.totalSeats">
+              {{ flightDetails?.totalSeats }} seats
+            </span>
+          </p>
+        </div>
+        <div class="seat-legend">
+          <span><span class="dot available"></span>Available</span>
+          <span><span class="dot booked"></span>Booked</span>
+          <span><span class="dot selected"></span>Selected</span>
         </div>
       </div>
 
-      <button
-        type="button"
-        class="secondary-btn"
-        (click)="addPassenger()"
-        [disabled]="isSubmitting">
-        + Add Passenger
-      </button>
+      <div class="active-passenger-chip" *ngIf="passengers.length">
+        Assigning seat for Passenger {{ activePassengerIndex + 1 }}:
+        <strong>{{ passengers[activePassengerIndex]?.name || 'Add name' }}</strong>
+      </div>
 
-      <button
-        type="submit"
-        class="primary-btn"
-        [disabled]="isSubmitting || form.invalid">
-        {{ isSubmitting ? 'Booking...' : 'Book Ticket' }}
-      </button>
+      <div *ngIf="seatLoading" class="seat-loading">Loading seat map...</div>
+      <div *ngIf="!seatLoading" class="seat-map">
+        <p class="seat-error" *ngIf="seatError">{{ seatError }}</p>
+        <p class="seat-helper-text">Click a seat to assign it. Booked seats are red; available are green.</p>
+        <div class="seat-grid" *ngIf="seatRows.length">
+          <div class="seat-row" *ngFor="let row of seatRows">
+            <button
+              type="button"
+              class="seat"
+              *ngFor="let seat of row"
+              [class.booked]="seat.booked || seat.available === false"
+              [class.selected]="seat.selectedBy !== null"
+              [class.mine]="seat.selectedBy === activePassengerIndex"
+              [disabled]="seat.booked || seat.available === false"
+              (click)="toggleSeat(seat)">
+              {{ seat.code }}
+              <small *ngIf="seat.selectedBy !== null && seat.selectedBy !== activePassengerIndex">
+                P{{ seat.selectedBy + 1 }}
+              </small>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <p class="error-text" *ngIf="message">{{ message }}</p>
-    </form>
+    <div class="card booking-card">
+      <h2 class="title">Flight Booking</h2>
+
+      <form #form="ngForm" (ngSubmit)="submit(form)">
+
+        <div class="form-group">
+          <label>Trip Type</label>
+          <select name="tripType" [(ngModel)]="tripType" required [disabled]="isSubmitting">
+            <option value="">Select</option>
+            <option value="ONE_WAY">One Way</option>
+            <option value="ROUND_TRIP">Round Trip</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Contact Name</label>
+          <input
+            type="text"
+            name="contactName"
+            [(ngModel)]="contactName"
+            required
+            [disabled]="isSubmitting" />
+        </div>
+
+        <div class="form-group">
+          <label>Contact Email</label>
+          <input
+            type="email"
+            name="contactEmail"
+            [(ngModel)]="contactEmail"
+            required
+            [disabled]="isSubmitting" />
+        </div>
+
+        <h3 class="section-title">Passengers</h3>
+
+        <div class="passenger-list">
+          <div
+            class="passenger-card"
+            *ngFor="let p of passengers; let i = index"
+            [class.active]="activePassengerIndex === i">
+
+            <div class="passenger-header">
+              <span>Passenger {{ i + 1 }}</span>
+              <div class="passenger-actions">
+                <button
+                  type="button"
+                  class="text-link"
+                  (click)="setActivePassenger(i)"
+                  [disabled]="isSubmitting">
+                  Select seat
+                </button>
+                <button
+                  type="button"
+                  class="remove-btn"
+                  *ngIf="passengers.length > 1"
+                  (click)="removePassenger(i)"
+                  [disabled]="isSubmitting">
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <div class="grid">
+              <input
+                type="text"
+                name="name{{i}}"
+                [(ngModel)]="p.name"
+                placeholder="Name"
+                required
+                [disabled]="isSubmitting" />
+
+              <input
+                type="number"
+                name="age{{i}}"
+                [(ngModel)]="p.age"
+                placeholder="Age"
+                required
+                [disabled]="isSubmitting" />
+
+              <select
+                name="gender{{i}}"
+                [(ngModel)]="p.gender"
+                required
+                [disabled]="isSubmitting">
+                <option value="">Gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+              </select>
+
+              <div class="seat-input">
+                <input
+                  type="text"
+                  name="seat{{i}}"
+                  [(ngModel)]="p.seatOutbound"
+                  placeholder="Seat (click map)"
+                  required
+                  readonly
+                  (focus)="setActivePassenger(i)"
+                  (click)="setActivePassenger(i)"
+                  [disabled]="isSubmitting" />
+                <small class="hint">Pick a seat from the map.</small>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="secondary-btn"
+          (click)="addPassenger()"
+          [disabled]="isSubmitting">
+          + Add Passenger
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+          [disabled]="isSubmitting || form.invalid">
+          {{ isSubmitting ? 'Booking...' : 'Book Ticket' }}
+        </button>
+
+        <p class="error-text" *ngIf="message">{{ message }}</p>
+      </form>
+    </div>
   </div>
 
   <div *ngIf="bookingSuccess" class="card confirmation-card">

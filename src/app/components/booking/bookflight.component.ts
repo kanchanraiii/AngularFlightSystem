@@ -6,6 +6,14 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { ToastComponent } from '../shared/toast.component';
+import { catchError, forkJoin, of } from 'rxjs';
+
+type SeatCell = {
+  code: string;
+  booked: boolean;
+  available: boolean;
+  selectedBy: number | null;
+};
 
 @Component({
   selector: 'app-booking',
@@ -25,6 +33,11 @@ export class BookingComponent implements OnInit {
       ? 'http://localhost:9000/booking/api/booking'
       : '/booking/api/booking';
 
+  private readonly flightBaseUrl =
+    window.location.port === '9000'
+      ? 'http://localhost:9000/flight/api/flight'
+      : '/flight/api/flight';
+
   tripType = '';
   contactName = '';
   contactEmail = '';
@@ -38,6 +51,14 @@ export class BookingComponent implements OnInit {
   flightId: string | null = null;
   bookingSuccess = false;
   bookingResponse: any = null;
+  flightDetails: any = null;
+
+  seatList: SeatCell[] = [];
+  seatRows: SeatCell[][] = [];
+  seatLoading = false;
+  seatError = '';
+  activePassengerIndex = 0;
+  private readonly seatsPerRow = 4;
 
   constructor(
     private http: HttpClient,
@@ -51,16 +72,31 @@ export class BookingComponent implements OnInit {
   ngOnInit(): void {
     this.flightId = this.route.snapshot.queryParamMap.get('flightId');
     this.contactEmail = localStorage.getItem('auth_email') || '';
+    if (this.flightId) {
+      this.loadSeatMap(this.flightId);
+    }
   }
 
   addPassenger(): void {
     if (this.isSubmitting) return;
     this.passengers.push({ name: '', age: null, gender: '', seatOutbound: '' });
+    this.activePassengerIndex = this.passengers.length - 1;
+    this.refreshSeatSelections();
   }
 
   removePassenger(index: number): void {
     if (this.isSubmitting) return;
-    if (this.passengers.length > 1) this.passengers.splice(index, 1);
+    if (this.passengers.length > 1) {
+      const seat = this.passengers[index]?.seatOutbound;
+      this.passengers.splice(index, 1);
+      if (seat) {
+        this.unassignSeat(seat);
+      }
+      if (this.activePassengerIndex >= this.passengers.length) {
+        this.activePassengerIndex = this.passengers.length - 1;
+      }
+      this.refreshSeatSelections();
+    }
   }
 
   logout(): void {
@@ -123,6 +159,149 @@ export class BookingComponent implements OnInit {
         this.isSubmitting = false;
       }
     });
+  }
+
+  loadSeatMap(flightId: string): void {
+    this.seatLoading = true;
+    this.seatError = '';
+
+    const flights$ = this.http.get<any[]>(`${this.flightBaseUrl}/getAllFlights`)
+      .pipe(
+        catchError((err) => {
+          console.error('[Booking] failed to load flights for seat map', err);
+          this.seatError = 'Flight data unavailable. Showing default seats.';
+          return of([]);
+        })
+      );
+
+    const seats$ = this.http.get<any[]>(`${this.flightBaseUrl}/${flightId}/seats`).pipe(
+      catchError((err) => {
+        console.warn('[Booking] seat map fetch failed, falling back to generated seats', err);
+        if (!this.seatError) {
+          this.seatError = 'Seat map unavailable. Using generated layout.';
+        }
+        return of([]);
+      })
+    );
+
+    forkJoin({ flights: flights$, seats: seats$ }).subscribe({
+      next: ({ flights, seats }) => {
+        this.flightDetails = Array.isArray(flights)
+          ? flights.find((f) => f.flightId === flightId)
+          : null;
+        this.buildSeatMap(Array.isArray(seats) ? seats : []);
+        this.seatLoading = false;
+      },
+      error: (err) => {
+        console.error('[Booking] seat map load failed', err);
+        this.seatError = 'Unable to load seat map.';
+        this.buildSeatMap([]);
+        this.seatLoading = false;
+      }
+    });
+  }
+
+  private buildSeatMap(payload: any[]): void {
+    const seats: SeatCell[] = [];
+    const inferredTotal = this.flightDetails?.totalSeats || payload?.length || 0;
+
+    if (Array.isArray(payload) && payload.length > 0) {
+      payload.forEach((s, idx) => {
+        const code = s?.seatNo || s?.seatId || s?.code || `S${idx + 1}`;
+        const booked = Boolean(s?.booked) || s?.available === false;
+        seats.push({
+          code,
+          booked,
+          available: !booked,
+          selectedBy: null
+        });
+      });
+    } else {
+      const total = inferredTotal > 0 ? inferredTotal : 24;
+      for (let i = 1; i <= total; i++) {
+        seats.push({
+          code: `S${i}`,
+          booked: false,
+          available: true,
+          selectedBy: null
+        });
+      }
+    }
+
+    this.seatList = seats;
+    this.refreshSeatSelections();
+  }
+
+  private chunkSeats(list: SeatCell[], size: number): SeatCell[][] {
+    const rows: SeatCell[][] = [];
+    for (let i = 0; i < list.length; i += size) {
+      rows.push(list.slice(i, i + size));
+    }
+    return rows;
+  }
+
+  private refreshSeatSelections(): void {
+    this.seatList.forEach((s) => {
+      if (!s.booked && s.available !== false) {
+        s.selectedBy = null;
+      }
+    });
+    this.passengers.forEach((p, idx) => {
+      if (p.seatOutbound) {
+        this.markSeatSelected(p.seatOutbound, idx, false);
+      }
+    });
+    this.seatRows = this.chunkSeats(this.seatList, this.seatsPerRow);
+  }
+
+  private markSeatSelected(code: string, passengerIndex: number, warnIfTaken = true): void {
+    const seat = this.seatList.find((s) => s.code === code);
+    if (!seat || seat.booked || seat.available === false) return;
+
+    if (seat.selectedBy !== null && seat.selectedBy !== passengerIndex) {
+      if (warnIfTaken) {
+        this.toast.show('Seat already selected for another passenger', 'error');
+      }
+      return;
+    }
+
+    seat.selectedBy = passengerIndex;
+  }
+
+  private unassignSeat(code: string): void {
+    const seat = this.seatList.find((s) => s.code === code);
+    if (seat) {
+      seat.selectedBy = null;
+    }
+  }
+
+  setActivePassenger(index: number): void {
+    this.activePassengerIndex = index;
+  }
+
+  toggleSeat(seat: SeatCell): void {
+    if (seat.booked || seat.available === false) return;
+    const idx = this.activePassengerIndex;
+    const current = this.passengers[idx];
+    if (!current) return;
+
+    if (current.seatOutbound === seat.code) {
+      current.seatOutbound = '';
+      seat.selectedBy = null;
+      this.seatRows = this.chunkSeats(this.seatList, this.seatsPerRow);
+      return;
+    }
+
+    this.unassignSeat(current.seatOutbound);
+
+    if (seat.selectedBy !== null && seat.selectedBy !== idx) {
+      this.toast.show('Seat already selected for another passenger', 'error');
+      return;
+    }
+
+    seat.selectedBy = idx;
+    current.seatOutbound = seat.code;
+    this.seatRows = this.chunkSeats(this.seatList, this.seatsPerRow);
   }
 
   validateForm(form: NgForm): boolean {
